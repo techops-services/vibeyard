@@ -1,0 +1,230 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  githubId      String?   @unique
+  githubUsername String?
+  githubAccessToken String? // Encrypted
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts     Account[]
+  sessions     Session[]
+  repositories Repository[]
+  votes        Vote[]
+  follows      Follow[]
+  activities   Activity[]
+
+  @@map("users")
+}
+
+// NextAuth.js Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Repository {
+  id                String   @id @default(cuid())
+
+  // GitHub data
+  githubId          Int      @unique
+  name              String
+  fullName          String
+  description       String?
+  owner             String
+  ownerAvatarUrl    String?
+  htmlUrl           String
+  language          String?
+  topics            String[] // Array of topic strings
+  stargazersCount   Int      @default(0)
+  forksCount        Int      @default(0)
+  openIssuesCount   Int      @default(0)
+  license           String?
+  isPrivate         Boolean  @default(false)
+
+  // Vibeyard data
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  votesCount        Int      @default(0)
+  followersCount    Int      @default(0)
+  viewsCount        Int      @default(0)
+
+  analysisStatus    String   @default("pending") // pending, processing, completed, failed
+  lastAnalyzedAt    DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  analysis          RepositoryAnalysis?
+  votes             Vote[]
+  follows           Follow[]
+  views             RepositoryView[]
+  activities        Activity[]
+
+  @@index([userId])
+  @@index([githubId])
+  @@index([analysisStatus])
+  @@index([createdAt])
+  @@index([votesCount])
+  @@index([followersCount])
+  @@map("repositories")
+}
+
+model RepositoryAnalysis {
+  id             String   @id @default(cuid())
+  repositoryId   String   @unique
+  repository     Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  // AI Detection
+  aiDetected     Boolean  @default(false)
+  aiProvider     String? // "claude", "gpt", "copilot", "cursor", "aider", etc.
+  aiConfidence   Float?   // 0.0 to 1.0
+  aiEvidence     Json?    // {files: [], commits: [], readme: []}
+
+  // Analysis Results
+  projectType    String?  // "web", "api", "cli", "library", etc.
+  framework      String?  // "nextjs", "react", "express", etc.
+  completenessScore Int?  // 0 to 100
+
+  // AI-powered insights
+  purpose        String?
+  techStack      String[] // Array of technology names
+  features       String[] // Array of notable features
+  improvements   String[] // Array of suggestions
+  mistakes       String[] // Array of common mistakes
+
+  // Timeline
+  firstCommitAt  DateTime?
+  lastCommitAt   DateTime?
+  commitCount    Int?
+  contributorCount Int?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("repository_analyses")
+}
+
+model Vote {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, repositoryId])
+  @@index([repositoryId])
+  @@index([userId])
+  @@map("votes")
+}
+
+model Follow {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, repositoryId])
+  @@index([repositoryId])
+  @@index([userId])
+  @@map("follows")
+}
+
+model RepositoryView {
+  id           String     @id @default(cuid())
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  // Anonymous tracking
+  ipAddress    String?
+  userAgent    String?
+
+  createdAt    DateTime   @default(now())
+
+  @@index([repositoryId])
+  @@index([createdAt])
+  @@map("repository_views")
+}
+
+model Activity {
+  id           String     @id @default(cuid())
+
+  actorId      String
+  actor        User       @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  type         String     // "repository_connected", "vote_added", "follow_added"
+
+  entityType   String     // "repository"
+  entityId     String
+  repository   Repository? @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  metadata     Json?      // Additional context
+
+  createdAt    DateTime   @default(now())
+
+  @@index([actorId])
+  @@index([entityId])
+  @@index([createdAt])
+  @@map("activities")
+}

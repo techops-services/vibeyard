@@ -1,28 +1,64 @@
 # MCP Memory file
 .claude/memory.jsonl
 
-# Node modules
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+*.spec.ts.snap
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
 
 # Environment variables
 .env
-.env.local
-.env.*.local
+.env*.local
+.env.production
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 # OS files
 .DS_Store
+*.pem
 Thumbs.db
 
 # IDE
 .vscode/
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
 
 # Logs
 logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+
+# Misc
+.turbo
+*.tgz
+.cache
+.temp
+tmp/

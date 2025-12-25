@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: vibeyard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vibeyard
+      POSTGRES_PASSWORD: vibeyard_dev_password
+      POSTGRES_DB: vibeyard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vibeyard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and job queue
+  redis:
+    image: redis:7-alpine
+    container_name: vibeyard-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # BullMQ Board (optional - for monitoring job queues)
+  bullboard:
+    image: deadly0/bull-board:latest
+    container_name: vibeyard-bullboard
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_USE_TLS: "false"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:

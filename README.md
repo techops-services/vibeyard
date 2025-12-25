@@ -18,6 +18,40 @@ The platform embraces the "junkyard" theme—celebrating the raw, experimental n
 
 ---
 
+## 🚀 Getting Started
+
+Ready to run vibeyard locally? Check out our **[Quick Start Guide](./docs/QUICKSTART.md)** for step-by-step instructions.
+
+**Prerequisites:**
+- Node.js 20+
+- Docker & Docker Compose
+- GitHub account (for OAuth)
+
+**Quick Setup:**
+```bash
+# Install dependencies
+npm install
+
+# Start Docker services (PostgreSQL + Redis)
+docker-compose up -d
+
+# Set up environment variables
+cp .env.example .env
+# Add your GitHub OAuth credentials
+
+# Run database migrations
+npx prisma migrate dev
+
+# Start development server
+npm run dev
+```
+
+Visit http://localhost:3000 to see your local vibeyard!
+
+For detailed instructions, see **[docs/SETUP.md](./docs/SETUP.md)**.
+
+---
+
 ## ✨ Key Features
 
 ### 🔗 Deep GitHub Integration
@@ -136,14 +170,32 @@ Vibeyard embraces a **simple, functional design** inspired by classic developer 
 
 ## 🛠️ Technology Stack
 
-*(To be determined as development progresses)*
+**Current Stack:**
+- **Frontend**: Next.js 14 with App Router, React 18, TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL 15 with Prisma ORM
+- **Caching**: Redis with BullMQ job queue
+- **Authentication**: NextAuth.js v5 with GitHub OAuth
+- **Repository Analysis**: GitHub API (Octokit) + OpenAI GPT-4
+- **Deployment**: Kubernetes + Helm + GitHub Actions
+- **Testing**: Vitest (unit) + Playwright (E2E)
 
-**Planned Technologies:**
-- Frontend: Modern JavaScript framework (React/Next.js or similar)
-- Backend: Scalable API architecture
-- Authentication: GitHub OAuth
-- Repository Analysis: GitHub API + custom AI analysis
-- Hosting: Cloud platform with auto-scaling capabilities
+---
+
+## 📚 Documentation
+
+- **[Quick Start Guide](./docs/QUICKSTART.md)** - Get up and running quickly
+- **[Setup Instructions](./docs/SETUP.md)** - Detailed local development setup
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - K8s deployment with Helm
+- **[Task Breakdown](./docs/TASKS.md)** - All 64 development tasks
+- **[Phase 1 Summary](./docs/PHASE1_SUMMARY.md)** - Implementation overview
+- **[Setup Checklist](./docs/CHECKLIST.md)** - Verification checklist
+- **[Implementation Summary](./docs/IMPLEMENTATION_SUMMARY.md)** - Complete technical details
+
+**External Documentation:**
+- [Technical Specification (Confluence)](https://techopsservices.atlassian.net/wiki/spaces/VIBE/pages/1769492)
+- [Implementation Plan (Confluence)](https://techopsservices.atlassian.net/wiki/spaces/VIBE/pages/1441811)
+- [JIRA Project](https://techopsservices.atlassian.net/jira/software/projects/VIBE)
 
 ---
 
