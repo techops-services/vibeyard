@@ -31,13 +31,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session?.user) {
         session.user.id = user.id
 
-        // Fetch GitHub data from the database
+        // Fetch GitHub data from User table
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           select: {
             githubId: true,
             githubUsername: true,
-            githubAccessToken: true,
           },
         })
 
@@ -48,18 +47,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session
     },
+  },
+  events: {
+    // Use signIn event which fires AFTER the user/account is created
     async signIn({ user, account, profile }) {
-      if (!account || !profile) {
-        return false
-      }
-
-      // GitHub provider
-      if (account.provider === 'github' && user.email) {
+      if (account?.provider === 'github' && profile) {
         try {
-          // Update user with GitHub information using email as identifier
-          // This works for both new and existing users
           await prisma.user.update({
-            where: { email: user.email },
+            where: { id: user.id },
             data: {
               githubId: account.providerAccountId,
               githubUsername: (profile as any).login,
@@ -68,11 +63,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           })
         } catch (error) {
           console.error('Error updating user GitHub data:', error)
-          // Don't block sign-in if GitHub data update fails
         }
       }
-
-      return true
     },
   },
   debug: process.env.NODE_ENV === 'development',
