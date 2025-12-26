@@ -1,74 +1,52 @@
 import Redis from 'ioredis'
 
-const globalForRedis = globalThis as unknown as {
-  redis: Redis | undefined
-}
+let redisClient: Redis | null = null
 
-// Lazy singleton - only create Redis client when first accessed
-function getRedisClient(): Redis {
-  if (globalForRedis.redis) {
-    return globalForRedis.redis
+export function getRedis(): Redis {
+  if (redisClient) {
+    return redisClient
   }
 
-  // Use bracket notation to prevent Next.js from inlining at build time
-  const redisUrl = process.env['REDIS_URL']
+  // Force runtime evaluation by going through global
+  const envVars = (global as any).process?.env || process.env
+  const redisUrl = envVars.REDIS_URL
 
-  console.log('Creating Redis client, REDIS_URL exists:', !!redisUrl)
+  console.log('=== Redis Init ===')
+  console.log('REDIS_URL from env:', redisUrl ? redisUrl.substring(0, 20) + '...' : 'NOT SET')
 
   if (!redisUrl) {
-    console.error('REDIS_URL environment variable is not set!')
+    console.error('FATAL: REDIS_URL is not set!')
+    throw new Error('REDIS_URL environment variable is required')
   }
 
-  const client = new Redis(redisUrl || 'redis://localhost:6379', {
+  redisClient = new Redis(redisUrl, {
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
-    lazyConnect: true,
     retryStrategy(times) {
       if (times > 10) {
-        console.error('Redis max retries reached, stopping reconnection')
-        return null // Stop retrying
+        console.error('Redis max retries reached')
+        return null
       }
-      const delay = Math.min(times * 500, 5000)
-      return delay
-    },
-    reconnectOnError(err) {
-      const targetErrors = ['READONLY', 'ECONNREFUSED', 'ETIMEDOUT']
-      return targetErrors.some((targetError) =>
-        err.message.includes(targetError)
-      )
+      return Math.min(times * 500, 5000)
     },
   })
 
-  // Handle connection events
-  client.on('error', (error) => {
+  redisClient.on('error', (error) => {
     console.error('Redis error:', error.message)
   })
 
-  client.on('connect', () => {
-    console.log('Redis connecting...')
+  redisClient.on('ready', () => {
+    console.log('✓ Redis connected')
   })
 
-  client.on('ready', () => {
-    console.log('✓ Redis ready')
-  })
-
-  client.on('close', () => {
-    console.log('Redis connection closed')
-  })
-
-  globalForRedis.redis = client
-
-  // Connect immediately if URL is available
-  if (redisUrl) {
-    client.connect().catch((error) => {
-      console.error('Redis initial connection error:', error.message)
-    })
-  }
-
-  return client
+  return redisClient
 }
 
-// Export a getter that creates client on first use
-export const redis = getRedisClient()
+// For backwards compatibility - lazy getter
+export const redis = new Proxy({} as Redis, {
+  get(_, prop) {
+    return (getRedis() as any)[prop]
+  },
+})
 
 export default redis
