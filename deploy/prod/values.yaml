@@ -27,8 +27,7 @@ service:
   type: ClusterIP
   containerPort: 3000
   tls:
-    enabled: true
-    issuerName: cloudflare
+    enabled: false
 
 ingress:
   enabled: true
