@@ -7,26 +7,22 @@ export function getRedis(): Redis {
     return redisClient
   }
 
-  // Force runtime evaluation by going through global
-  const envVars = (global as any).process?.env || process.env
-  const redisUrl = envVars.REDIS_URL
+  // Force runtime evaluation
+  const redisUrl = (global as any).process?.env?.REDIS_URL || process.env.REDIS_URL
 
-  console.log('=== Redis Init ===')
-  console.log('REDIS_URL from env:', redisUrl ? redisUrl.substring(0, 20) + '...' : 'NOT SET')
-
-  if (!redisUrl) {
-    console.error('FATAL: REDIS_URL is not set!')
-    throw new Error('REDIS_URL environment variable is required')
+  if (redisUrl) {
+    console.log('Redis connecting to:', redisUrl.replace(/\/\/.*@/, '//***@'))
+  } else {
+    console.warn('REDIS_URL not set, using localhost (build time only)')
   }
 
-  redisClient = new Redis(redisUrl, {
+  redisClient = new Redis(redisUrl || 'redis://localhost:6379', {
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
+    lazyConnect: !redisUrl, // Only lazy connect if no URL (build time)
     retryStrategy(times) {
-      if (times > 10) {
-        console.error('Redis max retries reached')
-        return null
-      }
+      if (!redisUrl) return null // Don't retry at build time
+      if (times > 10) return null
       return Math.min(times * 500, 5000)
     },
   })
@@ -42,10 +38,15 @@ export function getRedis(): Redis {
   return redisClient
 }
 
-// For backwards compatibility - lazy getter
+// Lazy proxy - only initialize when actually used
 export const redis = new Proxy({} as Redis, {
   get(_, prop) {
-    return (getRedis() as any)[prop]
+    const client = getRedis()
+    const value = (client as any)[prop]
+    if (typeof value === 'function') {
+      return value.bind(client)
+    }
+    return value
   },
 })
 
