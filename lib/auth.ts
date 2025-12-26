@@ -11,6 +11,7 @@ const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || 'build-time-pla
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET || 'build-time-placeholder-secret',
+  trustHost: true, // Required when behind proxy (Cloudflare/Traefik)
   providers: [
     GitHubProvider({
       clientId: GITHUB_CLIENT_ID,
