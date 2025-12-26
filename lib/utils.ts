@@ -45,3 +45,27 @@ export function truncate(text: string, maxLength: number): string {
 export function formatNumber(num: number): string {
   return new Intl.NumberFormat('en-US').format(num)
 }
+
+/**
+ * Format date consistently across server and client
+ * Avoids hydration errors from locale-dependent toLocaleDateString()
+ * Returns format like "Dec 25, 2025"
+ */
+export function formatDate(date: Date | string): string {
+  const d = new Date(date)
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
+}

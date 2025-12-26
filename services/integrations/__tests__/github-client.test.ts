@@ -15,7 +15,11 @@ import type { GitHubRepository, GitHubCommit } from '@/types/github'
 // Mock dependencies
 vi.mock('@/lib/cache')
 
-// Create mock Octokit instance
+/**
+ * Create mock Octokit instance with all required methods
+ * This mock is injected directly via the octokitInstance option
+ * to avoid issues with the Octokit constructor
+ */
 const mockOctokitInstance = {
   repos: {
     listForAuthenticatedUser: vi.fn(),
@@ -33,6 +37,7 @@ const mockOctokitInstance = {
   },
 }
 
+// Mock the Octokit constructor (not used when octokitInstance is provided)
 vi.mock('@octokit/rest', () => ({
   Octokit: vi.fn().mockImplementation(() => mockOctokitInstance),
 }))
@@ -115,25 +120,31 @@ describe('GitHubClient', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Reset all mock functions
+    // Reset all mock functions to ensure clean state between tests
     Object.values(mockOctokitInstance.repos).forEach((fn) => fn.mockReset())
     Object.values(mockOctokitInstance.git).forEach((fn) => fn.mockReset())
     mockOctokitInstance.rateLimit.get.mockReset()
 
     // Create client with test token and mocked octokit
+    // Use minimal retry delay for faster tests (10ms instead of default 1000ms)
+    // This prevents tests from waiting for exponential backoff delays
     client = new GitHubClient('ghp_test_token_123456789', {
       enableLogging: false,
       octokitInstance: mockOctokitInstance as any,
+      retryBaseDelay: 10, // Minimal delay for tests
+      maxRetries: 3,
+      timeout: 5000, // 5s timeout for tests
     })
 
     // Use the shared mock instance
     mockOctokit = mockOctokitInstance
 
-    // Mock cache service methods
+    // Mock all cache service methods to prevent actual Redis calls during tests
     vi.mocked(cacheService.get).mockResolvedValue(null)
     vi.mocked(cacheService.set).mockResolvedValue(undefined)
     vi.mocked(cacheService.del).mockResolvedValue(undefined)
     vi.mocked(cacheService.delPattern).mockResolvedValue(undefined)
+    vi.mocked(cacheService.invalidateGitHubRepoCache).mockResolvedValue(undefined)
   })
 
   afterEach(() => {

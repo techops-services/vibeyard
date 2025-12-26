@@ -1,0 +1,128 @@
+# =============================================================================
+# Vibeyard Production Helm Values
+# =============================================================================
+# NOTE: Before deploying, ensure the following are provisioned externally:
+#   - PostgreSQL database (DATABASE_URL)
+#   - Redis/ElastiCache instance (REDIS_URL)
+#   - GitHub OAuth App credentials
+#   - OpenAI API key
+# =============================================================================
+
+shared_env: &shared_env
+  DATABASE_URL:
+    type: parameterStore
+    name: db-url
+    parameter_name: /eks/maker-prod/vibeyard/db-url
+  REDIS_URL:
+    type: parameterStore
+    name: redis-url
+    parameter_name: /eks/maker-prod/vibeyard/redis-url
+
+replicaCount: 2
+
+service:
+  enabled: true
+  name: vibeyard-prod
+  port: 3000
+  type: ClusterIP
+  containerPort: 3000
+  tls:
+    enabled: true
+    issuerName: cloudflare
+
+ingress:
+  enabled: true
+  hosts:
+    - vibeyard.ai
+  annotations:
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.options: traefik-cloudflare-origin-pull@kubernetescrd
+
+httpWwwRedirect:
+  enabled: false
+httpBasicAuth:
+  enabled: false
+
+image:
+  repository: ${ECR_REGISTRY}/vibeyard-prod
+  tag: app-${IMAGE_TAG}
+  pullPolicy: Always
+
+deployment:
+  enabled: true
+  initContainers:
+    - name: db-migration
+      image: "${ECR_REGISTRY}/vibeyard-prod:migrator-${IMAGE_TAG}"
+      env: *shared_env
+
+serviceAccount:
+  create: false
+
+podAnnotations:
+  reloader.stakater.com/auto: "true"
+
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+env:
+  <<: *shared_env
+  NODE_ENV:
+    type: kv
+    value: "production"
+  HOSTNAME:
+    type: kv
+    value: "0.0.0.0"
+  # NextAuth.js
+  NEXTAUTH_URL:
+    type: kv
+    value: "https://vibeyard.ai"
+  NEXTAUTH_SECRET:
+    type: parameterStore
+    name: nextauth-secret
+    parameter_name: /eks/maker-prod/vibeyard/nextauth-secret
+  # Public URLs
+  NEXT_PUBLIC_BASE_URL:
+    type: kv
+    value: "https://vibeyard.ai"
+  # GitHub OAuth
+  GITHUB_CLIENT_ID:
+    type: parameterStore
+    name: github-client-id
+    parameter_name: /eks/maker-prod/vibeyard/github-client-id
+  GITHUB_CLIENT_SECRET:
+    type: parameterStore
+    name: github-client-secret
+    parameter_name: /eks/maker-prod/vibeyard/github-client-secret
+  # OpenAI (for repository analysis)
+  OPENAI_API_KEY:
+    type: parameterStore
+    name: openai-api-key
+    parameter_name: /eks/maker-prod/vibeyard/openai-api-key
+
+externalSecrets:
+  clusterSecretStoreName: maker-prod
+
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  httpGet:
+    path: /api/health
+    port: 3000
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  httpGet:
+    path: /api/health
+    port: 3000
+
+# =============================================================================
+# Analysis Worker Deployment (separate from main app)
+# =============================================================================
+# Deploy separately using: vibeyard-worker
+# See deploy/prod/worker-values.yaml

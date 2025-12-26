@@ -1,4 +1,4 @@
-import { expect, afterEach, vi } from 'vitest'
+import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 
@@ -14,7 +14,7 @@ process.env.NEXTAUTH_URL = 'http://localhost:3000'
 process.env.NEXTAUTH_SECRET = 'test-secret'
 process.env.GITHUB_CLIENT_ID = 'test-client-id'
 process.env.GITHUB_CLIENT_SECRET = 'test-client-secret'
-process.env.NODE_ENV = 'test'
+// NODE_ENV is automatically set to 'test' by vitest
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({

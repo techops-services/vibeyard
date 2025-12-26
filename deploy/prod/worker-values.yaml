@@ -1,0 +1,74 @@
+# =============================================================================
+# Vibeyard Analysis Worker - Production Helm Values
+# =============================================================================
+# This deploys the BullMQ worker that processes repository analysis jobs
+# =============================================================================
+
+shared_env: &shared_env
+  DATABASE_URL:
+    type: parameterStore
+    name: db-url
+    parameter_name: /eks/maker-prod/vibeyard/db-url
+  REDIS_URL:
+    type: parameterStore
+    name: redis-url
+    parameter_name: /eks/maker-prod/vibeyard/redis-url
+
+replicaCount: 1
+
+# No service/ingress needed - worker only processes queue jobs
+service:
+  enabled: false
+
+ingress:
+  enabled: false
+
+image:
+  repository: ${ECR_REGISTRY}/vibeyard-prod
+  tag: worker-${IMAGE_TAG}
+  pullPolicy: Always
+
+deployment:
+  enabled: true
+
+serviceAccount:
+  create: false
+
+podAnnotations:
+  reloader.stakater.com/auto: "true"
+
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+env:
+  <<: *shared_env
+  NODE_ENV:
+    type: kv
+    value: "production"
+  # GitHub credentials for API access (uses app's OAuth)
+  GITHUB_CLIENT_ID:
+    type: parameterStore
+    name: github-client-id
+    parameter_name: /eks/maker-prod/vibeyard/github-client-id
+  GITHUB_CLIENT_SECRET:
+    type: parameterStore
+    name: github-client-secret
+    parameter_name: /eks/maker-prod/vibeyard/github-client-secret
+  # OpenAI for analysis insights
+  OPENAI_API_KEY:
+    type: parameterStore
+    name: openai-api-key
+    parameter_name: /eks/maker-prod/vibeyard/openai-api-key
+
+externalSecrets:
+  clusterSecretStoreName: maker-prod
+
+# No probes needed for worker (it's a long-running process)
+livenessProbe:
+  enabled: false
+readinessProbe:
+  enabled: false

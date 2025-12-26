@@ -1,146 +1,62 @@
 # Vibeyard Documentation
 
-Welcome to the vibeyard documentation! This directory contains all the technical documentation for setting up, developing, and deploying vibeyard.
+Welcome to the Vibeyard documentation. This directory contains comprehensive guides for users, developers, and operators.
 
 ---
 
-## 📚 Documentation Index
+## Getting Started
 
-### Getting Started
-- **[QUICKSTART.md](./QUICKSTART.md)** - Quick reference guide to get vibeyard running locally
-- **[SETUP.md](./SETUP.md)** - Comprehensive local development setup guide with troubleshooting
-- **[CHECKLIST.md](./CHECKLIST.md)** - Step-by-step verification checklist for setup
+| # | Document | Description |
+|---|----------|-------------|
+| 1 | [Quickstart Guide](./01-QUICKSTART.md) | Get vibeyard running in under 10 minutes |
+| 2 | [Setup Guide](./02-SETUP.md) | Detailed local development environment setup |
+| 3 | [Deployment Guide](./03-DEPLOYMENT.md) | Production deployment with Kubernetes |
 
-### Development
-- **[TASKS.md](./TASKS.md)** - Complete breakdown of all 64 Phase 1 tasks with effort estimates
-- **[PHASE1_SUMMARY.md](./PHASE1_SUMMARY.md)** - High-level overview of Phase 1 implementation
-- **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** - Detailed technical implementation notes
-- **[AGENTS.md](./AGENTS.md)** - Information about Claude Code agents and their usage
+## Developer Documentation
 
-### Deployment
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete guide for deploying to Kubernetes with Helm and GitHub Actions
+| # | Document | Description |
+|---|----------|-------------|
+| 4 | [API Reference](./04-API-REFERENCE.md) | Quick reference for API endpoints |
 
----
+## Technical Implementation Guides
 
-## 🔗 External Documentation
+For developers implementing new features, see the [implementation/](./implementation/) folder:
 
-- **[Technical Specification (Confluence)](https://techopsservices.atlassian.net/wiki/spaces/VIBE/pages/1769492)** - Complete technical architecture and design
-- **[Implementation Plan (Confluence)](https://techopsservices.atlassian.net/wiki/spaces/VIBE/pages/1441811)** - Detailed implementation plan with 11 epics
-- **[JIRA Project](https://techopsservices.atlassian.net/jira/software/projects/VIBE)** - Task tracking and project management
+- **Collaboration API Implementation** - Technical API implementation guide
+- **Workbench Features** - Dashboard and workspace functionality
+- **Feature Specifications** - Detailed feature specs and designs
 
----
+## Confluence Documentation
 
-## 📖 Document Purposes
+Comprehensive architecture and planning documents are maintained in Confluence:
 
-### QUICKSTART.md
-**When to use:** You want to get vibeyard running as quickly as possible.
+- [Architecture Overview](./confluence/01-ARCHITECTURE-OVERVIEW.md)
+- [Phase 1 Implementation Guide](./confluence/02-PHASE1-IMPLEMENTATION-GUIDE.md)
+- [API Documentation](./confluence/03-API-DOCUMENTATION.md)
+- [Development Guidelines](./confluence/04-DEVELOPMENT-GUIDELINES.md)
 
-Contains:
-- Prerequisites checklist
-- 7-step quick setup process
-- Current project status
-- Next development tasks
+### External Links
 
-### SETUP.md
-**When to use:** You need detailed setup instructions with troubleshooting.
-
-Contains:
-- Complete installation guide
-- Docker setup instructions
-- GitHub OAuth configuration
-- Environment variable setup
-- Prisma database setup
-- Troubleshooting common issues
-- All development commands
-
-### DEPLOYMENT.md
-**When to use:** You're ready to deploy to production or staging.
-
-Contains:
-- Kubernetes deployment strategy
-- Helm chart structure
-- GitHub Actions CI/CD workflows
-- Dockerfile configuration
-- Monitoring and scaling strategies
-- Security considerations
-- Rollback procedures
-
-### TASKS.md
-**When to use:** You want to see all development tasks and their details.
-
-Contains:
-- 64 tasks organized into 11 epics
-- Effort estimates for each task
-- Task dependencies
-- Sprint organization
-- Critical path
-
-### PHASE1_SUMMARY.md
-**When to use:** You want a high-level overview of Phase 1.
-
-Contains:
-- Architecture summary
-- Key features overview
-- Timeline and effort estimates
-- Success criteria
-- Risk mitigation strategies
-- Links to detailed documentation
-
-### IMPLEMENTATION_SUMMARY.md
-**When to use:** You need detailed technical notes about what was implemented.
-
-Contains:
-- Complete list of files created
-- Implementation decisions
-- Configuration details
-- Testing setup
-- Known issues and TODOs
-
-### CHECKLIST.md
-**When to use:** You're setting up vibeyard and want to verify each step.
-
-Contains:
-- Prerequisites verification
-- Step-by-step setup checklist
-- Service health checks
-- Common issues and solutions
-- Final verification summary
-
-### AGENTS.md
-**When to use:** You want to understand or use Claude Code agents.
-
-Contains:
-- Available agent types
-- Agent capabilities
-- Usage examples
-- Best practices
+- [Technical Specification (Confluence)](https://techopsservices.atlassian.net/wiki/spaces/VIBE/pages/1769492)
+- [JIRA Project](https://techopsservices.atlassian.net/jira/software/projects/VIBE)
 
 ---
 
-## 🎯 Quick Navigation
+## Directory Structure
 
-**Just starting?** → [QUICKSTART.md](./QUICKSTART.md)
-
-**Need detailed setup help?** → [SETUP.md](./SETUP.md)
-
-**Want to see all tasks?** → [TASKS.md](./TASKS.md)
-
-**Ready to deploy?** → [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-**Troubleshooting setup?** → [CHECKLIST.md](./CHECKLIST.md)
-
----
-
-## 🤝 Contributing to Documentation
-
-Found an issue or want to improve the docs?
-
-1. Documentation follows Markdown format
-2. Keep examples clear and concise
-3. Include code snippets where helpful
-4. Test all commands before documenting
-5. Update the index when adding new docs
+```
+docs/
+├── README.md                    # This file
+├── 01-QUICKSTART.md            # Quick setup guide
+├── 02-SETUP.md                 # Detailed setup
+├── 03-DEPLOYMENT.md            # Deployment guide
+├── 04-API-REFERENCE.md         # API reference
+├── implementation/              # Technical implementation guides
+│   └── ...
+└── confluence/                  # Confluence sync files
+    └── ...
+```
 
 ---
 
-**Last Updated:** 2025-12-25
+**Last Updated:** 2025-12-26

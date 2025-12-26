@@ -53,8 +53,6 @@ docs
 # Local development
 docker-compose.yml
 docker-compose.*.yml
-Dockerfile*
-.dockerignore
 
 # Logs
 logs
@@ -65,17 +63,14 @@ tmp
 temp
 *.tmp
 
-# Package manager files
-package-lock.json
+# Package manager files (keep package-lock.json for npm ci)
 yarn.lock
 pnpm-lock.yaml
 
 # Helm and Kubernetes
+deploy
 helm
 k8s
-*.yaml
-*.yml
-!docker-compose.yml
 
 # Prisma
 prisma/migrations

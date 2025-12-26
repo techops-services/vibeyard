@@ -1,13 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
+import { Providers } from './providers'
 
 export const metadata: Metadata = {
-  title: 'Vibeyard - Showcase Your AI-Assisted Code Projects',
+  title: 'vibeyard',
   description:
-    'A collaborative showcase platform for AI-generated code projects with potential. Discover, connect, and collaborate on vibecode.',
+    'The junkyard for vibecode with potential',
 }
 
 export default function RootLayout({
@@ -17,7 +15,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Vibeyard RSS Feed"
+          href="/feed.xml"
+        />
+      </head>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }

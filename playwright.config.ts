@@ -12,7 +12,7 @@ export default defineConfig({
   reporter: [
     ['html'],
     ['list'],
-    ...(process.env.CI ? [['github' as const]] : []),
+    ...(process.env.CI ? [['github', {}] as ['github', Record<string, never>]] : []),
   ],
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:3000',

@@ -87,15 +87,14 @@ Your personal workspace for managing your vibecode projects:
 - Track improvement suggestions from the community
 
 ### 🤝 Collaboration Features
-Vibeyard supports **two types of users** working together:
 - **Seekers**: Developers looking for help, code reviews, bug fixes, or team members
-- **Providers**: Experienced developers offering mentorship, technical expertise, or collaboration
 
 **Collaboration Options:**
 - Request human code reviews
 - Seek help fixing specific issues
 - Form development teams around promising projects
 - Offer expertise to projects that align with your skills
+- Follow repositories for any updates
 
 ### 📄 License Compliance
 - Automatic license detection for each connected repository
@@ -108,31 +107,50 @@ Vibeyard supports **two types of users** working together:
 
 ### Phase 1: Core Platform (Current Focus)
 - [x] Platform concept and architecture design
-- [ ] GitHub OAuth integration
-- [ ] Repository connection and analysis engine
-- [ ] Yard Lot (public listing) interface
-- [ ] Workbench (user dashboard) interface
-- [ ] Basic upvoting and following functionality
-
-### Phase 2: Community & Collaboration
-- [ ] User profiles and reputation system
-- [ ] Collaboration matching system (Seekers ↔ Providers)
-- [ ] In-platform messaging and notifications
-- [ ] Project team formation tools
-- [ ] Code review request workflows
-
-### Phase 3: DevOps & Quality Features
-- [ ] **Automated Build & Deploy**: Attempt to build and deploy connected projects
-- [ ] **Completeness Rating**: Assign a quality score (1-5 stars) based on:
+- [x] GitHub OAuth integration
+- [x] Repository connection
+- [x] Repository Analysis engine backend
+- [x] Show Completeness Rating on the frontend: Assign a quality score (1-5 stars) based on:
   - Code completeness and functionality
   - Documentation quality
   - Test coverage
   - Deployment readiness
+- [x] Yard Lot (public listing) interface
+- [x] Workbench (user dashboard) interface
+- [x] Basic upvoting functionality
+- [x] Basic repository/lot following/subscribe functionality with user notifications (in app only for now)
+- [x] RSS feed for new repositories added to Yard Lot
+- [x] Add WTF menu item and page to the top nav with FAQ like content explaining vibeyard platform
+- [x] Add "vibecode" menu item and informational page to the top nav explaining vibecoding and how to do it correctly:
+- For example with Claude Code:
+ - Use of Agents with examples
+ - Use of Skills with examples
+ - Use of MCP servers with examples
+ - Skills that combine skills, agents, MCPs to create Feature development Workflows eg. feature-dev skill
+ - Context Window management
+ - Direct Agents/Skills to save implementation decisions/tasks to file for future course correction
+
+### Phase 2: Community & Collaboration
+- [x] Commenting system with notifications (in app only for now)
+  1. Nested indentation - Replies are visually indented to show parent-child relationships, creating a tree structure
+  2. Minimalist/text-first design - No avatars, no rich media, monospace-adjacent typography on a muted background
+  3. Flat metadata header - Username, relative timestamp, and navigation links (parent | root | prev | next) inline
+  4. Collapse controls - The [-] toggle to collapse entire sub-threads
+  5. Upvote-only voting - Single triangle, no downvote visible to most users
+  6. Simple "reply" action - Unobtrusive link at comment bottom
+
+### Phase 2.1: Deploy
+- [ ] Package the main and analysis worker as Dockerfiles for deployment with Helm to K8s
+- [ ] Add these Docker services to the local docker compose for development and testing
+- [ ] Create Github template repo with only the local Claude featureset and add link to vibecode page. This will help users getting started with vibecoding
+
+### Phase 3: DevOps & Quality Features
+- [ ] **Automated Build & Deploy**: Attempt to build and deploy connected projects
 - [ ] **Live Previews**: Screenshots and live demos of successfully deployed applications
 - [ ] **Log Monitoring**: Display build logs, deployment logs, and runtime insights
 
 ### Phase 4: Hosting & Monetization
-- [ ] **Lot Hosting**: Optional paid hosting for projects on generated `.vibeyard.dev` URLs
+- [ ] **Lot Hosting**: Optional paid hosting for projects on generated `.vibeyard.ai` URLs
 - [ ] **Custom Domains**: Support for custom domain mapping
 - [ ] **Project Marketplace**: Allow creators to list projects for sale or licensing
 - [ ] **Premium Features**: Advanced analytics, priority support, enhanced collaboration tools

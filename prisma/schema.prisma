@@ -10,6 +10,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Collaboration role for a specific repository
+enum CollaborationRole {
+  SEEKER      // Looking for help
+  PROVIDER    // Offering help
+  BOTH        // Open to both
+}
+
+// Types of collaboration being sought/offered
+enum CollaborationType {
+  CODE_REVIEW           // Human code review requests
+  BUG_FIX_HELP         // Help fixing specific issues
+  TEAM_FORMATION       // Looking to form dev team
+  EXPERTISE_OFFER      // Offering technical expertise
+  MENTORSHIP           // Mentorship/guidance
+  GENERAL_COLLABORATION // General collaboration
+}
+
+// Status of a collaboration request
+enum CollaborationRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  COMPLETED
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -31,6 +57,13 @@ model User {
   votes        Vote[]
   follows      Follow[]
   activities   Activity[]
+  collaborationRequestsSent     CollaborationRequest[] @relation("RequestorUser")
+  collaborationRequestsReceived CollaborationRequest[] @relation("TargetOwner")
+  suggestionsMade               ImprovementSuggestion[]
+  suggestionUpvotes             SuggestionUpvote[]
+  notifications                 Notification[]
+  comments                      Comment[]
+  commentVotes                  CommentVote[]
 
   @@map("users")
 }
@@ -107,6 +140,12 @@ model Repository {
   analysisStatus    String   @default("pending") // pending, processing, completed, failed
   lastAnalyzedAt    DateTime?
 
+  // Collaboration fields
+  collaborationRole       CollaborationRole?
+  collaborationTypes      CollaborationType[] // Array of collaboration types
+  collaborationDetails    String?              // Optional detailed description
+  isAcceptingCollaborators Boolean @default(false)
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -116,6 +155,11 @@ model Repository {
   follows           Follow[]
   views             RepositoryView[]
   activities        Activity[]
+  collaborationRequestsSent     CollaborationRequest[] @relation("RequestorRepo")
+  collaborationRequestsReceived CollaborationRequest[] @relation("TargetRepo")
+  improvementSuggestions        ImprovementSuggestion[]
+  notifications                 Notification[]
+  comments                      Comment[]
 
   @@index([userId])
   @@index([githubId])
@@ -223,8 +267,171 @@ model Activity {
 
   createdAt    DateTime   @default(now())
 
+  // Relations
+  notifications Notification[]
+
   @@index([actorId])
   @@index([entityId])
   @@index([createdAt])
   @@map("activities")
+}
+
+// Collaboration requests between users and repositories
+model CollaborationRequest {
+  id          String   @id @default(cuid())
+
+  // Requestor (the person offering to help or asking to join)
+  requestorId String
+  requestor   User     @relation("RequestorUser", fields: [requestorId], references: [id], onDelete: Cascade)
+
+  // Target repository and owner
+  targetRepoId String
+  targetRepo   Repository @relation("TargetRepo", fields: [targetRepoId], references: [id], onDelete: Cascade)
+  targetOwnerId String
+  targetOwner   User @relation("TargetOwner", fields: [targetOwnerId], references: [id], onDelete: Cascade)
+
+  // Request details
+  collaborationType CollaborationType
+  message          String             // Why they want to collaborate
+  status           CollaborationRequestStatus @default(PENDING)
+
+  // Optional: if requestor has a related repo
+  requestorRepoId String?
+  requestorRepo   Repository? @relation("RequestorRepo", fields: [requestorRepoId], references: [id], onDelete: SetNull)
+
+  // Metadata
+  respondedAt      DateTime?
+  responseMessage  String?            // Owner's response
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([requestorId])
+  @@index([targetRepoId])
+  @@index([targetOwnerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("collaboration_requests")
+}
+
+// Track improvement suggestions from community
+model ImprovementSuggestion {
+  id           String   @id @default(cuid())
+
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  suggestedById String
+  suggestedBy   User @relation(fields: [suggestedById], references: [id], onDelete: Cascade)
+
+  title        String
+  description  String
+  category     String   // "bug", "feature", "performance", "documentation", etc.
+  priority     String   @default("medium") // "low", "medium", "high"
+
+  status       String   @default("open") // "open", "acknowledged", "implemented", "closed"
+
+  upvotesCount Int      @default(0)
+
+  ownerResponse String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  upvotes      SuggestionUpvote[]
+
+  @@index([repositoryId])
+  @@index([suggestedById])
+  @@index([status])
+  @@index([createdAt])
+  @@map("improvement_suggestions")
+}
+
+// Upvotes for suggestions
+model SuggestionUpvote {
+  id           String   @id @default(cuid())
+
+  suggestionId String
+  suggestion   ImprovementSuggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+
+  userId       String
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, suggestionId])
+  @@index([suggestionId])
+  @@index([userId])
+  @@map("suggestion_upvotes")
+}
+
+// Notifications for users
+model Notification {
+  id           String   @id @default(cuid())
+  userId       String
+  type         NotificationType
+  title        String
+  message      String
+  repositoryId String?
+  activityId   String?
+  read         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository   Repository? @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+  activity     Activity?   @relation(fields: [activityId], references: [id], onDelete: SetNull)
+
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  NEW_VOTE
+  NEW_FOLLOWER
+  NEW_COLLABORATION_REQUEST
+  COLLABORATION_STATUS_CHANGE
+  NEW_SUGGESTION
+  NEW_ANALYSIS_COMPLETE
+  NEW_COMMENT
+  COMMENT_REPLY
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  content      String   @db.Text
+  userId       String
+  repositoryId String
+  parentId     String?
+  depth        Int      @default(0)
+  votesCount   Int      @default(0)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  parent       Comment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      Comment[]  @relation("CommentReplies")
+  votes        CommentVote[]
+
+  @@index([repositoryId, createdAt])
+  @@index([parentId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model CommentVote {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@map("comment_votes")
 }
