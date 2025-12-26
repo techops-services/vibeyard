@@ -68,7 +68,5 @@ externalSecrets:
   clusterSecretStoreName: maker-prod
 
 # No probes needed for worker (it's a long-running process)
-livenessProbe:
-  enabled: false
-readinessProbe:
-  enabled: false
+livenessProbe: null
+readinessProbe: null
