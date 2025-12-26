@@ -37,7 +37,8 @@ ingress:
     external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.tls.options: traefik-cloudflare-origin-pull@kubernetescrd
+    # Note: Removed traefik-cloudflare-origin-pull - Cloudflare handles edge TLS
+    # Set Cloudflare SSL mode to "Full" (not "Full strict") in dashboard
 
 httpWwwRedirect:
   enabled: false
