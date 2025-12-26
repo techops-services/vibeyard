@@ -1,15 +1,25 @@
 import Redis from 'ioredis'
 
-// Use placeholder for build time - real value provided at runtime via K8s secrets
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
+// Get Redis URL at runtime, not build time
+function getRedisUrl(): string {
+  const url = process.env.REDIS_URL
+  if (!url) {
+    console.warn('REDIS_URL not set, using localhost fallback')
+    return 'redis://localhost:6379'
+  }
+  return url
+}
 
 const globalForRedis = globalThis as unknown as {
   redis: Redis | undefined
 }
 
-export const redis =
-  globalForRedis.redis ??
-  new Redis(REDIS_URL, {
+function createRedisClient(): Redis {
+  if (globalForRedis.redis) {
+    return globalForRedis.redis
+  }
+
+  const client = new Redis(getRedisUrl(), {
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
     lazyConnect: true,
@@ -25,11 +35,16 @@ export const redis =
     },
   })
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForRedis.redis = redis
+  if (process.env.NODE_ENV !== 'production') {
+    globalForRedis.redis = client
+  }
+
+  return client
 }
 
-// Only connect at runtime, not during build
+export const redis = createRedisClient()
+
+// Only connect at runtime when REDIS_URL is set
 if (typeof window === 'undefined' && process.env.REDIS_URL) {
   redis
     .connect()

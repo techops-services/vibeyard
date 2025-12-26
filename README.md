@@ -140,7 +140,7 @@ Your personal workspace for managing your vibecode projects:
   6. Simple "reply" action - Unobtrusive link at comment bottom
 
 ### Phase 2.1: Deploy
-- [ ] Package the main and analysis worker as Dockerfiles for deployment with Helm to K8s
+- [x] Package the main and analysis worker as Dockerfiles for deployment with Helm to K8s
 - [ ] Add these Docker services to the local docker compose for development and testing
 - [ ] Create Github template repo with only the local Claude featureset and add link to vibecode page. This will help users getting started with vibecoding
 
