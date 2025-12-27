@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { CollaborationType, Repository } from '@prisma/client'
+import { Repository } from '@prisma/client'
 import { StarRating } from '@/app/components/ui/StarRating'
 import { AnalysisStatus } from '@/app/components/ui/AnalysisStatus'
 import { EditDeployedUrl } from './EditDeployedUrl'
+import { EditCollaborationOptions } from './EditCollaborationOptions'
 
 interface RepositoryWithAnalytics extends Repository {
   _count: {
@@ -100,33 +101,16 @@ export function RepositoryList({ repositories }: Props) {
               initialUrl={repo.deployedUrl}
             />
 
-            {repo.collaborationTypes && repo.collaborationTypes.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {repo.collaborationTypes.map((type) => (
-                  <span
-                    key={type}
-                    className="text-xs px-2 py-0.5 bg-[--yard-light-gray] text-[--yard-gray]"
-                  >
-                    {formatCollaborationType(type)}
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* Collaboration Options */}
+            <EditCollaborationOptions
+              repositoryId={repo.id}
+              initialTypes={repo.collaborationTypes || []}
+              initialDetails={repo.collaborationDetails}
+              initialIsAccepting={repo.isAcceptingCollaborators}
+            />
           </div>
         ))}
       </div>
     </div>
   )
-}
-
-function formatCollaborationType(type: CollaborationType): string {
-  const map: Record<CollaborationType, string> = {
-    CODE_REVIEW: 'code review',
-    BUG_FIX_HELP: 'bug fixes',
-    TEAM_FORMATION: 'team building',
-    EXPERTISE_OFFER: 'expertise',
-    MENTORSHIP: 'mentorship',
-    GENERAL_COLLABORATION: 'collaboration',
-  }
-  return map[type] || type
 }

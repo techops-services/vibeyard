@@ -5,6 +5,16 @@ import { z } from 'zod'
 
 const updateRepoSchema = z.object({
   deployedUrl: z.string().url().nullable().optional(),
+  collaborationTypes: z.array(z.enum([
+    'CODE_REVIEW',
+    'BUG_FIX_HELP',
+    'TEAM_FORMATION',
+    'EXPERTISE_OFFER',
+    'MENTORSHIP',
+    'GENERAL_COLLABORATION'
+  ])).optional(),
+  collaborationDetails: z.string().nullable().optional(),
+  isAcceptingCollaborators: z.boolean().optional(),
 })
 
 /**
@@ -111,14 +121,35 @@ export async function PATCH(
 
     // Parse and validate request body
     const body = await request.json()
-    const { deployedUrl } = updateRepoSchema.parse(body)
+    const {
+      deployedUrl,
+      collaborationTypes,
+      collaborationDetails,
+      isAcceptingCollaborators
+    } = updateRepoSchema.parse(body)
+
+    // Build update data
+    const updateData: Record<string, unknown> = {}
+
+    if (deployedUrl !== undefined) {
+      updateData.deployedUrl = deployedUrl || null
+    }
+    if (collaborationTypes !== undefined) {
+      updateData.collaborationTypes = collaborationTypes
+      // Set role to SEEKER if any collaboration types are selected
+      updateData.collaborationRole = collaborationTypes.length > 0 ? 'SEEKER' : null
+    }
+    if (collaborationDetails !== undefined) {
+      updateData.collaborationDetails = collaborationDetails || null
+    }
+    if (isAcceptingCollaborators !== undefined) {
+      updateData.isAcceptingCollaborators = isAcceptingCollaborators
+    }
 
     // Update repository
     const updated = await prisma.repository.update({
       where: { id: params.id },
-      data: {
-        deployedUrl: deployedUrl || null,
-      },
+      data: updateData,
     })
 
     return NextResponse.json(updated)
