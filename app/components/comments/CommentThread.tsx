@@ -96,7 +96,7 @@ export function CommentThread({ repositoryId, repositoryName }: CommentThreadPro
 
   const handleSubmitComment = async (content: string, parentId?: string) => {
     if (!session) {
-      router.push('/api/auth/signin')
+      router.push('/signin')
       return
     }
 
@@ -176,7 +176,7 @@ export function CommentThread({ repositoryId, repositoryName }: CommentThreadPro
         ) : (
           <div className="text-xs yard-meta">
             <a
-              href="/api/auth/signin"
+              href="/signin"
               className="text-[--yard-orange] hover:underline"
             >
               Sign in

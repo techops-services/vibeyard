@@ -56,7 +56,7 @@ export function RepoItem({
     e.stopPropagation()
 
     if (!session) {
-      window.location.href = '/api/auth/signin'
+      window.location.href = '/signin'
       return
     }
 

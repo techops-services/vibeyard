@@ -28,7 +28,7 @@ export function CommentVote({
     e.stopPropagation()
 
     if (!session) {
-      router.push('/api/auth/signin')
+      router.push('/signin')
       return
     }
 

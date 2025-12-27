@@ -23,7 +23,7 @@ export function FollowButton({
 
   const handleToggleFollow = async () => {
     if (!session) {
-      router.push('/api/auth/signin')
+      router.push('/signin')
       return
     }
 
