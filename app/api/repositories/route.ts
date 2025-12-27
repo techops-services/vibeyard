@@ -8,7 +8,9 @@ import { z } from 'zod'
 const addRepoSchema = z.object({
   owner: z.string(),
   name: z.string(),
-  // NEW: Collaboration options
+  // Deployed URL (optional)
+  deployedUrl: z.string().url().optional().or(z.literal('')),
+  // Collaboration options
   collaborationOptions: z.object({
     role: z.enum(['SEEKER', 'PROVIDER', 'BOTH']).optional(),
     types: z.array(z.enum([
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json()
-    const { owner, name, collaborationOptions } = addRepoSchema.parse(body)
+    const { owner, name, deployedUrl, collaborationOptions } = addRepoSchema.parse(body)
 
     // Get user's GitHub access token
     const user = await prisma.user.findUnique({
@@ -127,7 +129,9 @@ export async function POST(request: NextRequest) {
         license: githubRepo.license?.spdx_id,
         isPrivate: githubRepo.private,
         userId: session.user.id,
-        // NEW: Collaboration fields
+        // Deployed URL
+        deployedUrl: deployedUrl || null,
+        // Collaboration fields
         collaborationRole: collaborationOptions?.role,
         collaborationTypes: collaborationOptions?.types || [],
         collaborationDetails: collaborationOptions?.details,

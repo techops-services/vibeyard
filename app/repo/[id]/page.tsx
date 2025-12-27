@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils'
 import { CollaborationSection } from './components/CollaborationSection'
 import { AnalysisSection } from './components/AnalysisSection'
 import { FollowButton } from '@/app/components/ui/FollowButton'
+import { DeployedBadge } from '@/app/components/ui/DeployedBadge'
 import { CommentThread } from '@/app/components/comments/CommentThread'
 
 export const dynamic = 'force-dynamic'
@@ -128,6 +129,12 @@ export default async function RepoDetailPage({ params }: PageProps) {
                 <p className="text-sm mb-3 leading-relaxed">
                   {repository.description}
                 </p>
+              )}
+
+              {repository.deployedUrl && (
+                <div className="mb-4">
+                  <DeployedBadge url={repository.deployedUrl} />
+                </div>
               )}
 
               <div className="flex flex-wrap gap-3 yard-meta text-xs">

@@ -133,6 +133,8 @@ model Repository {
   userId            String
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  deployedUrl       String?  // Live deployment URL (e.g., https://vibeyard.ai)
+
   votesCount        Int      @default(0)
   followersCount    Int      @default(0)
   viewsCount        Int      @default(0)

@@ -15,6 +15,7 @@ type Step = 'repo' | 'collaboration'
 export function AddVibeModal({ isOpen, onClose }: Props) {
   const [step, setStep] = useState<Step>('repo')
   const [repoUrl, setRepoUrl] = useState('')
+  const [deployedUrl, setDeployedUrl] = useState('')
   const [collaborationOptions, setCollaborationOptions] = useState<CollaborationOptions>({
     role: 'SEEKER',
     types: [],
@@ -29,6 +30,7 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
     if (!isLoading) {
       setStep('repo')
       setRepoUrl('')
+      setDeployedUrl('')
       setCollaborationOptions({
         role: 'SEEKER',
         types: [],
@@ -91,10 +93,12 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
       const payload: {
         owner: string
         name: string
+        deployedUrl?: string
         collaborationOptions?: CollaborationOptions
       } = {
         owner: parsed.owner,
         name: parsed.name,
+        deployedUrl: deployedUrl.trim() || undefined,
       }
 
       if (includeCollaboration && collaborationOptions.types.length > 0) {
@@ -164,6 +168,23 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
                 />
                 <p className="yard-meta text-xs mt-1">
                   Enter a GitHub repository in the format &quot;owner/repo&quot; or paste the full GitHub URL
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 mono">
+                  Live URL <span className="yard-meta font-normal">(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  value={deployedUrl}
+                  onChange={(e) => setDeployedUrl(e.target.value)}
+                  placeholder="https://your-app.com"
+                  className="yard-input w-full"
+                  disabled={isLoading}
+                />
+                <p className="yard-meta text-xs mt-1">
+                  If your vibe is deployed and live, add the URL to show it off
                 </p>
               </div>
 
