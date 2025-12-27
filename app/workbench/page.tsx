@@ -12,8 +12,10 @@ export const dynamic = 'force-dynamic'
 export default async function WorkbenchPage() {
   const session = await auth()
 
-  // Show login prompt for non-authenticated users
-  if (!session?.user?.id) {
+  const isLoggedIn = !!session?.user?.id
+
+  // For non-logged-in users, show empty state
+  if (!isLoggedIn) {
     return (
       <main className="flex-1 max-w-6xl w-full mx-auto p-4">
         {/* Breadcrumb */}
@@ -25,19 +27,37 @@ export default async function WorkbenchPage() {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mono mb-2">the workbench</h1>
+          <h1 className="text-3xl font-bold mono mb-2">workbench</h1>
           <p className="yard-meta text-sm">
             Your private workspace for managing vibecode projects
           </p>
         </div>
 
-        {/* Login Prompt */}
-        <div className="border border-[--yard-border] p-8 text-center">
-          <h2 className="text-lg font-bold mono mb-3">your repositories</h2>
-          <p className="yard-meta text-sm mb-4">
-            Login with GitHub to see and manage your vibes
-          </p>
-          <LoginPrompt />
+        {/* Stats Overview - all zeros */}
+        <WorkbenchStats repositories={[]} />
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Left Column */}
+          <div className="space-y-6">
+            <div className="border border-[--yard-border]">
+              <div className="p-4 border-b border-[--yard-border]">
+                <h2 className="text-lg font-bold mono">your repositories</h2>
+              </div>
+              <div className="p-6 text-center">
+                <p className="yard-meta text-sm mb-4">
+                  Login with GitHub to see and manage your vibes
+                </p>
+                <LoginPrompt />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            <CollaborationRequests requests={[]} />
+            <ImprovementSuggestions suggestions={[]} />
+          </div>
         </div>
       </main>
     )
@@ -144,7 +164,7 @@ export default async function WorkbenchPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mono mb-2">the workbench</h1>
+        <h1 className="text-3xl font-bold mono mb-2">workbench</h1>
         <p className="yard-meta text-sm">
           Your private workspace for managing vibecode projects
         </p>
