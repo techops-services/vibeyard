@@ -8,6 +8,7 @@ import { CollaborationSection } from './components/CollaborationSection'
 import { AnalysisSection } from './components/AnalysisSection'
 import { FollowButton } from '@/app/components/ui/FollowButton'
 import { DeployedBadge } from '@/app/components/ui/DeployedBadge'
+import { ClaimButton } from '@/app/components/ui/ClaimButton'
 import { CommentThread } from '@/app/components/comments/CommentThread'
 
 export const dynamic = 'force-dynamic'
@@ -94,6 +95,14 @@ export default async function VibeDetailPage({ params }: PageProps) {
 
   const isOwner = session?.user?.id === repository.userId
   const isLoggedIn = !!session?.user?.id
+
+  // Check if the vibeyard user who added the repo is also the GitHub repo owner
+  const isVerifiedOwner = repository.user.githubUsername?.toLowerCase() === repository.owner.toLowerCase()
+
+  // Check if current user can claim this repo (their GitHub username matches repo owner)
+  const canClaim = isLoggedIn &&
+    !isOwner &&
+    session?.user?.githubUsername?.toLowerCase() === repository.owner.toLowerCase()
 
   // Check if current user is following
   let isFollowing = false
@@ -191,6 +200,16 @@ export default async function VibeDetailPage({ params }: PageProps) {
                   />
                 </div>
               )}
+
+              {/* Claim Button - show to repo owner who doesn't own it in vibeyard yet */}
+              {canClaim && (
+                <div className="mt-4">
+                  <ClaimButton
+                    repositoryId={repository.id}
+                    repositoryName={repository.fullName}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -217,7 +236,14 @@ export default async function VibeDetailPage({ params }: PageProps) {
                 </div>
                 <div className="flex justify-between">
                   <dt className="yard-meta">Added by:</dt>
-                  <dd className="mono">{repository.user.githubUsername}</dd>
+                  <dd className="mono flex items-center gap-1">
+                    {repository.user.githubUsername}
+                    {isVerifiedOwner && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 font-medium" title="Verified owner">
+                        ✓ owner
+                      </span>
+                    )}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="yard-meta">Added on:</dt>
