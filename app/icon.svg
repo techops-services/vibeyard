@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff8533"/>
+      <stop offset="100%" style="stop-color:#ff6600"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="32" height="32" rx="4" fill="#1a1a1a"/>
+  <!-- Construction beam / V shape -->
+  <path d="M6 8 L16 24 L26 8" stroke="url(#glow)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Rivets -->
+  <circle cx="6" cy="8" r="2" fill="#ff6600"/>
+  <circle cx="26" cy="8" r="2" fill="#ff6600"/>
+  <circle cx="16" cy="24" r="2" fill="#ff6600"/>
+</svg>
