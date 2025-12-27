@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { formatDate } from '@/lib/utils'
 import { CollaborationRole } from '@prisma/client'
@@ -46,13 +46,13 @@ export function RepoItem({
   isAcceptingCollaborators = false,
   completenessScore,
 }: RepoItemProps) {
-  const router = useRouter()
   const { data: session } = useSession()
   const [votes, setVotes] = useState(votesCount)
   const [voted, setVoted] = useState(userHasVoted)
   const [isVoting, setIsVoting] = useState(false)
 
   const handleVote = async (e: React.MouseEvent) => {
+    e.preventDefault()
     e.stopPropagation()
 
     if (!session) {
@@ -85,14 +85,6 @@ export function RepoItem({
     }
   }
 
-  const handleRowClick = () => {
-    router.push(`/vibe/${owner}/${name}`)
-  }
-
-  const handleGithubClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-  }
-
   const getHostname = (url: string) => {
     try {
       return new URL(url).hostname.replace('www.', '')
@@ -102,9 +94,9 @@ export function RepoItem({
   }
 
   return (
-    <div
-      className="yard-item flex gap-2 cursor-pointer hover:bg-[--yard-hover]"
-      onClick={handleRowClick}
+    <Link
+      href={`/vibe/${owner}/${name}`}
+      className="yard-item flex gap-2 cursor-pointer hover:bg-[--yard-hover] block"
     >
       {/* Vote section */}
       <div className="flex flex-col items-center justify-start pt-1 w-8">
@@ -172,7 +164,7 @@ export function RepoItem({
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-[--yard-orange] hover:underline"
-            onClick={handleGithubClick}
+            onClick={(e) => e.stopPropagation()}
           >
             github
           </a>
@@ -185,6 +177,6 @@ export function RepoItem({
           </div>
         )}
       </div>
-    </div>
+    </Link>
   )
 }
