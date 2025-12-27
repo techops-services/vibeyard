@@ -123,18 +123,17 @@ export default async function RepoDetailPage({ params }: PageProps) {
             </div>
 
             <div className="flex-1">
-              <h1 className="text-2xl font-bold mono mb-2">{repository.fullName}</h1>
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <h1 className="text-2xl font-bold mono">{repository.fullName}</h1>
+                {repository.deployedUrl && (
+                  <DeployedBadge url={repository.deployedUrl} />
+                )}
+              </div>
 
               {repository.description && (
                 <p className="text-sm mb-3 leading-relaxed">
                   {repository.description}
                 </p>
-              )}
-
-              {repository.deployedUrl && (
-                <div className="mb-4">
-                  <DeployedBadge url={repository.deployedUrl} />
-                </div>
               )}
 
               <div className="flex flex-wrap gap-3 yard-meta text-xs">
