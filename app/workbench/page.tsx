@@ -5,14 +5,42 @@ import { WorkbenchStats } from './components/WorkbenchStats'
 import { RepositoryList } from './components/RepositoryList'
 import { CollaborationRequests } from './components/CollaborationRequests'
 import { ImprovementSuggestions } from './components/ImprovementSuggestions'
+import { LoginPrompt } from './components/LoginPrompt'
 
 export const dynamic = 'force-dynamic'
 
 export default async function WorkbenchPage() {
   const session = await auth()
 
+  // Show login prompt for non-authenticated users
   if (!session?.user?.id) {
-    return null // Layout will redirect
+    return (
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4">
+        {/* Breadcrumb */}
+        <div className="mb-4 yard-meta text-xs">
+          <Link href="/" className="hover:text-[--yard-orange] hover:underline">
+            ← back to yard lot
+          </Link>
+        </div>
+
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mono mb-2">the workbench</h1>
+          <p className="yard-meta text-sm">
+            Your private workspace for managing vibecode projects
+          </p>
+        </div>
+
+        {/* Login Prompt */}
+        <div className="border border-[--yard-border] p-8 text-center">
+          <h2 className="text-lg font-bold mono mb-3">your repositories</h2>
+          <p className="yard-meta text-sm mb-4">
+            Login with GitHub to see and manage your vibes
+          </p>
+          <LoginPrompt />
+        </div>
+      </main>
+    )
   }
 
   // Fetch user's repositories with analytics

@@ -51,24 +51,17 @@ export default async function HomePage() {
 
       <main className="flex-1 max-w-4xl w-full mx-auto">
         {/* Add vibe bar */}
-        {session && (
-          <div className="border-b border-[--yard-border] p-2 flex items-center justify-end">
-            <AddVibeForm />
-          </div>
-        )}
+        <div className="border-b border-[--yard-border] p-2 flex items-center justify-end">
+          <AddVibeForm />
+        </div>
 
         {/* Repository list */}
         {repositories.length === 0 ? (
           <div className="p-8 text-center yard-meta">
             <p className="mb-2">No repositories in the yard yet.</p>
-            {session && (
-              <p className="text-xs">
-                Be the first to add a vibe using the &quot;+ add vibe&quot; button above.
-              </p>
-            )}
-            {!session && (
-              <p className="text-xs">Login with GitHub to add repositories.</p>
-            )}
+            <p className="text-xs">
+              Be the first to add a vibe using the &quot;+ add vibe&quot; button above.
+            </p>
           </div>
         ) : (
           <div>

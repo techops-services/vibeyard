@@ -1,18 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { CollaborationOptions } from '@/types/collaboration'
 import { CollaborationOptionsForm } from './CollaborationOptionsForm'
+
+const PENDING_VIBE_KEY = 'vibeyard_pending_vibe'
+
+interface PendingVibeData {
+  repoUrl: string
+  deployedUrl: string
+  collaborationOptions: CollaborationOptions
+  includeCollaboration: boolean
+}
 
 interface Props {
   isOpen: boolean
   onClose: () => void
+  isLoggedIn?: boolean
 }
 
 type Step = 'repo' | 'collaboration'
 
-export function AddVibeModal({ isOpen, onClose }: Props) {
+export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
   const [step, setStep] = useState<Step>('repo')
   const [repoUrl, setRepoUrl] = useState('')
   const [deployedUrl, setDeployedUrl] = useState('')
@@ -24,7 +35,39 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [autoSubmitting, setAutoSubmitting] = useState(false)
   const router = useRouter()
+
+  // Check for pending vibe data when modal opens and user is logged in
+  useEffect(() => {
+    if (isOpen && isLoggedIn) {
+      const pendingData = sessionStorage.getItem(PENDING_VIBE_KEY)
+      if (pendingData) {
+        try {
+          const data: PendingVibeData = JSON.parse(pendingData)
+          // Restore form state
+          setRepoUrl(data.repoUrl)
+          setDeployedUrl(data.deployedUrl)
+          setCollaborationOptions(data.collaborationOptions)
+          // Clear pending data
+          sessionStorage.removeItem(PENDING_VIBE_KEY)
+          // Auto-submit
+          setAutoSubmitting(true)
+        } catch {
+          sessionStorage.removeItem(PENDING_VIBE_KEY)
+        }
+      }
+    }
+  }, [isOpen, isLoggedIn])
+
+  // Handle auto-submit after restoring pending data
+  useEffect(() => {
+    if (autoSubmitting && repoUrl) {
+      const includeCollaboration = collaborationOptions.types.length > 0
+      submitRepository(includeCollaboration)
+      setAutoSubmitting(false)
+    }
+  }, [autoSubmitting, repoUrl])
 
   const handleClose = () => {
     if (!isLoading) {
@@ -88,6 +131,20 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
       const parsed = parseRepoUrl(repoUrl)
       if (!parsed) {
         throw new Error('Invalid repository format')
+      }
+
+      // If not logged in, store data and redirect to login
+      if (!isLoggedIn) {
+        const pendingData: PendingVibeData = {
+          repoUrl,
+          deployedUrl,
+          collaborationOptions,
+          includeCollaboration,
+        }
+        sessionStorage.setItem(PENDING_VIBE_KEY, JSON.stringify(pendingData))
+        // Redirect to login - will return to homepage where pending data will be processed
+        signIn('github')
+        return
       }
 
       const payload: {
@@ -221,6 +278,12 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
                 <span className="mono text-[--yard-fg] font-medium">{repoUrl}</span>
               </p>
 
+              {!isLoggedIn && (
+                <div className="bg-[--yard-light-orange] border border-[--yard-orange] text-sm p-3 mb-4">
+                  You&apos;ll be asked to login with GitHub to complete adding your vibe.
+                </div>
+              )}
+
               <form onSubmit={handleCollaborationSubmit}>
                 <CollaborationOptionsForm
                   options={collaborationOptions}
@@ -239,7 +302,7 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
                     className="yard-button"
                     disabled={isLoading || collaborationOptions.types.length === 0}
                   >
-                    {isLoading ? 'Adding...' : 'Add with Collaboration'}
+                    {isLoading ? 'Adding...' : isLoggedIn ? 'Add with Collaboration' : 'Login & Add Vibe'}
                   </button>
                   <button
                     type="button"
@@ -247,7 +310,7 @@ export function AddVibeModal({ isOpen, onClose }: Props) {
                     className="yard-button bg-[--yard-light-gray] border-[--yard-border] text-[--yard-fg] hover:bg-gray-200"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Adding...' : 'Skip & Add Vibe'}
+                    {isLoading ? 'Adding...' : isLoggedIn ? 'Skip & Add Vibe' : 'Login & Skip Collab'}
                   </button>
                   <button
                     type="button"

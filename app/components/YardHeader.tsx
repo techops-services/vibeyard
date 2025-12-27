@@ -33,11 +33,9 @@ export function YardHeader() {
           </div>
         </Link>
         <nav className="flex items-center gap-3 text-xs border-l border-white/30 pl-4">
-          {session && (
-            <Link href="/workbench" className="hover:opacity-80">
-              workbench
-            </Link>
-          )}
+          <Link href="/workbench" className="hover:opacity-80">
+            workbench
+          </Link>
           <Link href="/wtf" className="hover:opacity-80">
             wtf
           </Link>
