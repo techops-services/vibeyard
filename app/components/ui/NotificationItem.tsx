@@ -11,6 +11,7 @@ interface NotificationItemProps {
   message: string
   repositoryId?: string | null
   repositoryName?: string | null
+  repositoryOwner?: string | null
   read: boolean
   createdAt: Date
   onMarkAsRead?: (id: string) => void
@@ -40,7 +41,8 @@ export function NotificationItem({
   type,
   title,
   message,
-  repositoryId,
+  repositoryName,
+  repositoryOwner,
   read,
   createdAt,
   onMarkAsRead,
@@ -80,9 +82,9 @@ export function NotificationItem({
     </div>
   )
 
-  if (repositoryId) {
+  if (repositoryOwner && repositoryName) {
     return (
-      <Link href={`/repo/${repositoryId}`} className="block">
+      <Link href={`/vibe/${repositoryOwner}/${repositoryName}`} className="block">
         {content}
       </Link>
     )

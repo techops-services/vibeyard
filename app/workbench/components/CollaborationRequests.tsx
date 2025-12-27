@@ -6,7 +6,7 @@ import { CollaborationRequest, User, Repository } from '@prisma/client'
 
 type RequestWithRelations = CollaborationRequest & {
   requestor: Pick<User, 'id' | 'name' | 'image' | 'githubUsername'>
-  targetRepo: Pick<Repository, 'id' | 'name' | 'fullName'>
+  targetRepo: Pick<Repository, 'id' | 'name' | 'owner' | 'fullName'>
 }
 
 interface Props {
@@ -58,7 +58,7 @@ export function CollaborationRequests({ requests }: Props) {
                   <p className="text-sm yard-meta mb-2">
                     wants to collaborate on{' '}
                     <Link
-                      href={`/repo/${request.targetRepo.id}`}
+                      href={`/vibe/${request.targetRepo.owner}/${request.targetRepo.name}`}
                       className="hover:text-[--yard-orange] hover:underline"
                     >
                       {request.targetRepo.name}

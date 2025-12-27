@@ -50,7 +50,7 @@ export function RepositoryList({ repositories }: Props) {
           <div key={repo.id} className="p-4 hover:bg-[--yard-light-gray]">
             <div className="flex items-start justify-between mb-2">
               <Link
-                href={`/repo/${repo.id}`}
+                href={`/vibe/${repo.owner}/${repo.name}`}
                 className="font-medium mono hover:text-[--yard-orange] hover:underline"
               >
                 {repo.fullName}

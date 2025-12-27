@@ -63,6 +63,7 @@ export default async function WorkbenchPage() {
         select: {
           id: true,
           name: true,
+          owner: true,
           fullName: true,
         },
       },
@@ -86,6 +87,7 @@ export default async function WorkbenchPage() {
         select: {
           id: true,
           name: true,
+          owner: true,
         },
       },
       suggestedBy: {

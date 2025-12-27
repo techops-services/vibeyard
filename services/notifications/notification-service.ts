@@ -34,6 +34,7 @@ export async function createNotification(data: CreateNotificationData) {
         select: {
           id: true,
           name: true,
+          owner: true,
           fullName: true,
         },
       },
@@ -70,6 +71,7 @@ export async function getNotifications(
           select: {
             id: true,
             name: true,
+            owner: true,
             fullName: true,
           },
         },

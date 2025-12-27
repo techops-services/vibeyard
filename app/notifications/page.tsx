@@ -18,6 +18,7 @@ interface Notification {
   repository?: {
     id: string
     name: string
+    owner: string
     fullName: string
   } | null
 }
@@ -180,8 +181,8 @@ export default function NotificationsPage() {
                   type={notification.type}
                   title={notification.title}
                   message={notification.message}
-                  repositoryId={notification.repositoryId}
                   repositoryName={notification.repository?.name}
+                  repositoryOwner={notification.repository?.owner}
                   read={notification.read}
                   createdAt={new Date(notification.createdAt)}
                   onMarkAsRead={handleMarkAsRead}

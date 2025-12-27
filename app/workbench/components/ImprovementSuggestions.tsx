@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ImprovementSuggestion, User, Repository } from '@prisma/client'
 
 type SuggestionWithRelations = ImprovementSuggestion & {
-  repository: Pick<Repository, 'id' | 'name'>
+  repository: Pick<Repository, 'id' | 'name' | 'owner'>
   suggestedBy: Pick<User, 'id' | 'name' | 'githubUsername'>
 }
 
@@ -37,7 +37,7 @@ export function ImprovementSuggestions({ suggestions }: Props) {
             <div key={suggestion.id} className="p-4">
               <div className="flex items-start justify-between gap-2 mb-1">
                 <Link
-                  href={`/repo/${suggestion.repository.id}/suggestions`}
+                  href={`/vibe/${suggestion.repository.owner}/${suggestion.repository.name}`}
                   className="font-medium hover:text-[--yard-orange] hover:underline flex-1"
                 >
                   {suggestion.title}

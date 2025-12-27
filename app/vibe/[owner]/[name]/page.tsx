@@ -14,17 +14,25 @@ export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: {
-    id: string
+    owner: string
+    name: string
   }
 }
 
-export default async function RepoDetailPage({ params }: PageProps) {
+export default async function VibeDetailPage({ params }: PageProps) {
   // Auth check
   const session = await auth()
 
-  // Fetch repository with all details
-  const repository = await prisma.repository.findUnique({
-    where: { id: params.id },
+  // Decode URL params (in case of special characters)
+  const owner = decodeURIComponent(params.owner)
+  const name = decodeURIComponent(params.name)
+
+  // Fetch repository by owner and name
+  const repository = await prisma.repository.findFirst({
+    where: {
+      owner: owner,
+      name: name,
+    },
     include: {
       user: {
         select: {
@@ -52,12 +60,12 @@ export default async function RepoDetailPage({ params }: PageProps) {
   // Track view (server-side)
   await prisma.repositoryView.create({
     data: {
-      repositoryId: params.id,
+      repositoryId: repository.id,
     },
   })
 
   await prisma.repository.update({
-    where: { id: params.id },
+    where: { id: repository.id },
     data: {
       viewsCount: {
         increment: 1,
@@ -68,7 +76,7 @@ export default async function RepoDetailPage({ params }: PageProps) {
   // Fetch active collaborators (users with accepted collaboration requests)
   const activeCollaborators = await prisma.collaborationRequest.findMany({
     where: {
-      targetRepoId: params.id,
+      targetRepoId: repository.id,
       status: 'ACCEPTED',
     },
     include: {
@@ -94,7 +102,7 @@ export default async function RepoDetailPage({ params }: PageProps) {
       where: {
         userId_repositoryId: {
           userId: session.user.id,
-          repositoryId: params.id,
+          repositoryId: repository.id,
         },
       },
     })

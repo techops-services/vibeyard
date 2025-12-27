@@ -33,7 +33,7 @@ export function RepoItem({
   name,
   fullName,
   description,
-  owner: _owner,
+  owner,
   htmlUrl,
   language,
   stargazersCount,
@@ -86,7 +86,7 @@ export function RepoItem({
   }
 
   const handleRowClick = () => {
-    router.push(`/repo/${id}`)
+    router.push(`/vibe/${owner}/${name}`)
   }
 
   const handleGithubClick = (e: React.MouseEvent) => {
