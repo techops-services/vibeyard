@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CollaborationType, Repository } from '@prisma/client'
 import { StarRating } from '@/app/components/ui/StarRating'
 import { AnalysisStatus } from '@/app/components/ui/AnalysisStatus'
+import { EditDeployedUrl } from './EditDeployedUrl'
 
 interface RepositoryWithAnalytics extends Repository {
   _count: {
@@ -92,6 +93,12 @@ export function RepositoryList({ repositories }: Props) {
                 />
               )}
             </div>
+
+            {/* Deployed URL */}
+            <EditDeployedUrl
+              repositoryId={repo.id}
+              initialUrl={repo.deployedUrl}
+            />
 
             {repo.collaborationTypes && repo.collaborationTypes.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
