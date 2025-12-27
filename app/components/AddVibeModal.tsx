@@ -12,7 +12,7 @@ interface Props {
 
 type Step = 'repo' | 'collaboration'
 
-export function AddRepoModal({ isOpen, onClose }: Props) {
+export function AddVibeModal({ isOpen, onClose }: Props) {
   const [step, setStep] = useState<Step>('repo')
   const [repoUrl, setRepoUrl] = useState('')
   const [collaborationOptions, setCollaborationOptions] = useState<CollaborationOptions>({
@@ -133,7 +133,7 @@ export function AddRepoModal({ isOpen, onClose }: Props) {
         {/* Header */}
         <div className="border-b-2 border-[--yard-border] p-4 flex items-center justify-between bg-[--yard-light-gray]">
           <h2 className="text-lg font-bold mono">
-            {step === 'repo' ? 'Add Repository' : 'Collaboration Options'}
+            {step === 'repo' ? 'Add Vibe' : 'Collaboration Options'}
           </h2>
           <button
             onClick={handleClose}
@@ -151,7 +151,7 @@ export function AddRepoModal({ isOpen, onClose }: Props) {
             <form onSubmit={handleRepoSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2 mono">
-                  Repository URL
+                  GitHub Repository
                 </label>
                 <input
                   type="text"
@@ -226,7 +226,7 @@ export function AddRepoModal({ isOpen, onClose }: Props) {
                     className="yard-button bg-[--yard-light-gray] border-[--yard-border] text-[--yard-fg] hover:bg-gray-200"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Adding...' : 'Skip & Add Repo'}
+                    {isLoading ? 'Adding...' : 'Skip & Add Vibe'}
                   </button>
                   <button
                     type="button"

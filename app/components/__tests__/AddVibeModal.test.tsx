@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { AddRepoModal } from '../AddRepoModal'
+import { AddVibeModal } from '../AddVibeModal'
 import { useRouter } from 'next/navigation'
 
 // Mock next/navigation
@@ -10,7 +10,7 @@ jest.mock('next/navigation', () => ({
 // Mock fetch
 global.fetch = jest.fn()
 
-describe('AddRepoModal', () => {
+describe('AddVibeModal', () => {
   const mockRouter = {
     refresh: jest.fn(),
   }
@@ -21,18 +21,18 @@ describe('AddRepoModal', () => {
   })
 
   it('does not render when closed', () => {
-    render(<AddRepoModal isOpen={false} onClose={jest.fn()} />)
-    expect(screen.queryByText('Add Repository')).not.toBeInTheDocument()
+    render(<AddVibeModal isOpen={false} onClose={jest.fn()} />)
+    expect(screen.queryByText('Add Vibe')).not.toBeInTheDocument()
   })
 
   it('renders step 1 when open', () => {
-    render(<AddRepoModal isOpen={true} onClose={jest.fn()} />)
-    expect(screen.getByText('Add Repository')).toBeInTheDocument()
+    render(<AddVibeModal isOpen={true} onClose={jest.fn()} />)
+    expect(screen.getByText('Add Vibe')).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/owner\/repo/i)).toBeInTheDocument()
   })
 
   it('validates repository URL format', () => {
-    render(<AddRepoModal isOpen={true} onClose={jest.fn()} />)
+    render(<AddVibeModal isOpen={true} onClose={jest.fn()} />)
 
     const input = screen.getByPlaceholderText(/owner\/repo/i)
     const nextButton = screen.getByText('Next: Collaboration Options')
@@ -45,7 +45,7 @@ describe('AddRepoModal', () => {
   })
 
   it('accepts valid owner/repo format', () => {
-    render(<AddRepoModal isOpen={true} onClose={jest.fn()} />)
+    render(<AddVibeModal isOpen={true} onClose={jest.fn()} />)
 
     const input = screen.getByPlaceholderText(/owner\/repo/i)
     const nextButton = screen.getByText('Next: Collaboration Options')
@@ -59,7 +59,7 @@ describe('AddRepoModal', () => {
   })
 
   it('accepts valid GitHub URL format', () => {
-    render(<AddRepoModal isOpen={true} onClose={jest.fn()} />)
+    render(<AddVibeModal isOpen={true} onClose={jest.fn()} />)
 
     const input = screen.getByPlaceholderText(/owner\/repo/i)
     const nextButton = screen.getByText('Next: Collaboration Options')
@@ -79,7 +79,7 @@ describe('AddRepoModal', () => {
       json: async () => ({ id: '123', name: 'react' }),
     })
 
-    render(<AddRepoModal isOpen={true} onClose={mockOnClose} />)
+    render(<AddVibeModal isOpen={true} onClose={mockOnClose} />)
 
     // Step 1: Enter repo
     const input = screen.getByPlaceholderText(/owner\/repo/i)
@@ -88,10 +88,10 @@ describe('AddRepoModal', () => {
 
     // Step 2: Skip collaboration
     await waitFor(() => {
-      expect(screen.getByText('Skip & Add Repo')).toBeInTheDocument()
+      expect(screen.getByText('Skip & Add Vibe')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByText('Skip & Add Repo'))
+    fireEvent.click(screen.getByText('Skip & Add Vibe'))
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
@@ -116,7 +116,7 @@ describe('AddRepoModal', () => {
       json: async () => ({ id: '123', name: 'react' }),
     })
 
-    render(<AddRepoModal isOpen={true} onClose={mockOnClose} />)
+    render(<AddVibeModal isOpen={true} onClose={mockOnClose} />)
 
     // Step 1: Enter repo
     const input = screen.getByPlaceholderText(/owner\/repo/i)
@@ -173,7 +173,7 @@ describe('AddRepoModal', () => {
       json: async () => ({ error: 'Repository already added' }),
     })
 
-    render(<AddRepoModal isOpen={true} onClose={jest.fn()} />)
+    render(<AddVibeModal isOpen={true} onClose={jest.fn()} />)
 
     // Step 1: Enter repo
     const input = screen.getByPlaceholderText(/owner\/repo/i)
@@ -182,10 +182,10 @@ describe('AddRepoModal', () => {
 
     // Step 2: Skip collaboration
     await waitFor(() => {
-      expect(screen.getByText('Skip & Add Repo')).toBeInTheDocument()
+      expect(screen.getByText('Skip & Add Vibe')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByText('Skip & Add Repo'))
+    fireEvent.click(screen.getByText('Skip & Add Vibe'))
 
     await waitFor(() => {
       expect(screen.getByText('Repository already added')).toBeInTheDocument()
@@ -193,7 +193,7 @@ describe('AddRepoModal', () => {
   })
 
   it('allows going back from step 2 to step 1', async () => {
-    render(<AddRepoModal isOpen={true} onClose={jest.fn()} />)
+    render(<AddVibeModal isOpen={true} onClose={jest.fn()} />)
 
     // Go to step 2
     const input = screen.getByPlaceholderText(/owner\/repo/i)
@@ -207,7 +207,7 @@ describe('AddRepoModal', () => {
     // Go back
     fireEvent.click(screen.getByText('Back'))
 
-    expect(screen.getByText('Add Repository')).toBeInTheDocument()
+    expect(screen.getByText('Add Vibe')).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/owner\/repo/i)).toHaveValue('facebook/react')
   })
 })

@@ -2,9 +2,9 @@
 
 This directory contains reusable React components for the Vibeyard application.
 
-## AddRepoModal
+## AddVibeModal
 
-A multi-step modal for adding repositories with optional collaboration settings.
+A multi-step modal for adding vibes (GitHub repositories) with optional collaboration settings.
 
 ### Features
 
@@ -21,15 +21,15 @@ A multi-step modal for adding repositories with optional collaboration settings.
 ### Usage
 
 ```tsx
-import { AddRepoModal } from '@/app/components/AddRepoModal'
+import { AddVibeModal } from '@/app/components/AddVibeModal'
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)}>Add Repository</button>
-      <AddRepoModal
+      <button onClick={() => setIsOpen(true)}>Add Vibe</button>
+      <AddVibeModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       />
@@ -105,21 +105,21 @@ function MyComponent() {
 - `options: CollaborationOptions` - Current collaboration options state
 - `onChange: (options: CollaborationOptions) => void` - Callback when options change
 
-## AddRepoForm
+## AddVibeForm
 
-A simple wrapper component that displays a button and manages the AddRepoModal state.
+A simple wrapper component that displays a button and manages the AddVibeModal state.
 
 ### Usage
 
 ```tsx
-import { AddRepoForm } from '@/app/components/AddRepoForm'
+import { AddVibeForm } from '@/app/components/AddVibeForm'
 
 function MyComponent() {
-  return <AddRepoForm />
+  return <AddVibeForm />
 }
 ```
 
-This component is used in the main layout to provide the "+ add repo" button.
+This component is used in the main layout to provide the "+ add vibe" button.
 
 ## Design System
 
@@ -149,7 +149,7 @@ All components follow the "yard" aesthetic defined in `/app/globals.css`:
 
 Tests are located in `__tests__/` subdirectory:
 
-- `AddRepoModal.test.tsx` - Tests for modal component
+- `AddVibeModal.test.tsx` - Tests for modal component
 - `CollaborationOptionsForm.test.tsx` - Tests for form component
 
 Run tests with:
@@ -160,7 +160,7 @@ npm test
 
 ## API Integration
 
-The AddRepoModal component integrates with the `/api/repositories` endpoint:
+The AddVibeModal component integrates with the `/api/repositories` endpoint:
 
 ### POST Request
 

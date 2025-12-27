@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { YardHeader } from './components/YardHeader'
 import { RepoItem } from './components/RepoItem'
-import { AddRepoForm } from './components/AddRepoForm'
+import { AddVibeForm } from './components/AddVibeForm'
 import { YardFooter } from './components/YardFooter'
 
 export const dynamic = 'force-dynamic'
@@ -50,10 +50,10 @@ export default async function HomePage() {
       <YardHeader />
 
       <main className="flex-1 max-w-4xl w-full mx-auto">
-        {/* Add repo bar */}
+        {/* Add vibe bar */}
         {session && (
           <div className="border-b border-[--yard-border] p-2 flex items-center justify-end">
-            <AddRepoForm />
+            <AddVibeForm />
           </div>
         )}
 
@@ -63,7 +63,7 @@ export default async function HomePage() {
             <p className="mb-2">No repositories in the yard yet.</p>
             {session && (
               <p className="text-xs">
-                Be the first to add a repo using the &quot;+ add repo&quot; button above.
+                Be the first to add a vibe using the &quot;+ add vibe&quot; button above.
               </p>
             )}
             {!session && (

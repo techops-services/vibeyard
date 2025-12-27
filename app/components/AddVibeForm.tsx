@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { AddRepoModal } from './AddRepoModal'
+import { AddVibeModal } from './AddVibeModal'
 
-export function AddRepoForm() {
+export function AddVibeForm() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
@@ -12,9 +12,9 @@ export function AddRepoForm() {
         onClick={() => setIsModalOpen(true)}
         className="yard-button"
       >
-        + add repo
+        + add vibe
       </button>
-      <AddRepoModal
+      <AddVibeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />

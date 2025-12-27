@@ -38,13 +38,6 @@ export function YardHeader() {
               workbench
             </Link>
           )}
-          <a
-            href="/feed.xml"
-            className="hover:opacity-80"
-            title="RSS Feed"
-          >
-            rss
-          </a>
           <Link href="/wtf" className="hover:opacity-80">
             wtf
           </Link>

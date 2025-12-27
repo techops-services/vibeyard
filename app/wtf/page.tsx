@@ -33,13 +33,13 @@ export default function WTFPage() {
               What is a &quot;lot&quot; in the yard lot?
             </h2>
             <p className="text-sm mb-2">
-              The &quot;yard lot&quot; is the main feed - a collection of repositories
-              submitted by the community. Each repository is like a &quot;lot&quot; in a
+              The &quot;yard lot&quot; is the main feed - a collection of vibes
+              submitted by the community. Each vibe is like a &quot;lot&quot; in a
               junkyard, waiting to be discovered and appreciated for its
               potential.
             </p>
             <p className="text-sm yard-meta">
-              Repositories are ranked by votes, with the most interesting
+              Vibes are ranked by votes, with the most interesting
               projects rising to the top.
             </p>
           </section>
@@ -69,8 +69,8 @@ export default function WTFPage() {
               How do I add my repository?
             </h2>
             <p className="text-sm mb-2">
-              Login with your GitHub account, then use the &quot;+ add repo&quot; button
-              in the top-right corner. Enter your repository&apos;s GitHub URL and
+              Login with your GitHub account, then use the &quot;+ add vibe&quot; button
+              in the top-right corner. Enter your GitHub repository URL and
               it will be automatically fetched and added to the yard lot.
             </p>
             <p className="text-sm yard-meta">

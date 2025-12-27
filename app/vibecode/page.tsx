@@ -79,13 +79,13 @@ export default function VibeCodPage() {
           <div className="bg-[--yard-light-gray] p-3 mb-3">
             <p className="text-xs mono font-bold mb-2">Example usage:</p>
             <pre className="text-xs mono whitespace-pre-wrap">
-              {`&quot;Spawn an Explore agent to map out the authentication flow&quot;
+              {`"Spawn an Explore agent to map out the authentication flow"
 
-&quot;Use a Plan agent to design the API structure for user management&quot;
+"Use a Plan agent to design the API structure for user management"
 
-&quot;Have a developer agent implement the GitHub OAuth integration&quot;
+"Have a developer agent implement the GitHub OAuth integration"
 
-&quot;Ask a tester agent to write integration tests for the new API&quot;`}
+"Ask a tester agent to write integration tests for the new API"`}
             </pre>
           </div>
 
@@ -305,12 +305,12 @@ Pre-deployment validation workflow
               Example TodoWrite usage:
             </p>
             <pre className="text-xs mono whitespace-pre-wrap">
-              {`&quot;Create a todo list for this feature:
+              {`"Create a todo list for this feature:
 1. Implement user authentication API
 2. Add database migrations
 3. Write integration tests
 4. Update documentation
-5. Create PR and link to JIRA-123&quot;`}
+5. Create PR and link to JIRA-123"`}
             </pre>
           </div>
         </section>
@@ -379,14 +379,14 @@ Pre-deployment validation workflow
             </p>
             <div className="bg-[--yard-light-gray] p-3">
               <pre className="text-xs mono whitespace-pre-wrap">
-                {`&quot;Store in memory: We chose to use React Server Components
-for all data fetching to reduce client bundle size&quot;
+                {`"Store in memory: We chose to use React Server Components
+for all data fetching to reduce client bundle size"
 
-&quot;Remember that the authentication flow uses NextAuth with
-GitHub OAuth and stores sessions in PostgreSQL&quot;
+"Remember that the authentication flow uses NextAuth with
+GitHub OAuth and stores sessions in PostgreSQL"
 
-&quot;Save this decision: Error handling uses a global error
-boundary with structured logging to DataDog&quot;`}
+"Save this decision: Error handling uses a global error
+boundary with structured logging to DataDog"`}
               </pre>
             </div>
           </div>
