@@ -56,7 +56,7 @@ export async function GET() {
       .map((repo) => {
         const title = `${escapeXml(repo.name)} by ${escapeXml(repo.owner)}`
         const description = escapeXml(repo.description || 'No description provided')
-        const link = `${baseUrl}/repo/${repo.id}`
+        const link = `${baseUrl}/vibe/${repo.owner}/${repo.name}`
         const pubDate = new Date(repo.createdAt).toUTCString()
         const category = repo.analysis?.aiProvider
           ? escapeXml(repo.analysis.aiProvider)
