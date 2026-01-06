@@ -161,6 +161,22 @@ export default async function VibeDetailPage({ params }: PageProps) {
                 </p>
               )}
 
+              {/* Screenshot */}
+              {repository.screenshotUrl && (
+                <div className="mb-4 border border-[--yard-border] overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={repository.screenshotUrl}
+                    alt={`Screenshot of ${repository.fullName || repository.title || 'vibe'}`}
+                    className="w-full h-auto max-h-[400px] object-contain bg-[--yard-light-gray]"
+                    onError={(e) => {
+                      // Hide the image container if it fails to load
+                      (e.target as HTMLImageElement).parentElement!.style.display = 'none'
+                    }}
+                  />
+                </div>
+              )}
+
               <div className="flex flex-wrap gap-3 yard-meta text-xs">
                 {repository.htmlUrl ? (
                   <>

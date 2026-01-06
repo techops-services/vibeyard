@@ -14,6 +14,8 @@ const addRepoSchema = z.object({
   description: z.string().optional(),
   // Deployed URL (optional)
   deployedUrl: z.string().url().optional().or(z.literal('')),
+  // Screenshot URL (optional)
+  screenshotUrl: z.string().url().optional().or(z.literal('')),
   // Collaboration options
   collaborationOptions: z.object({
     role: z.enum(['SEEKER', 'PROVIDER', 'BOTH']).optional(),
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json()
-    const { owner, name, title, description, deployedUrl, collaborationOptions } = addRepoSchema.parse(body)
+    const { owner, name, title, description, deployedUrl, screenshotUrl, collaborationOptions } = addRepoSchema.parse(body)
 
     const isGitHubVibe = owner && name
 
@@ -122,12 +124,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Create GitHub-linked repository in database
+      // Use user-provided description if given, otherwise fallback to GitHub description
       const repository = await prisma.repository.create({
         data: {
           githubId: githubRepo.id,
           name: githubRepo.name,
           fullName: githubRepo.full_name,
-          description: githubRepo.description,
+          description: description?.trim() || githubRepo.description,
           owner: githubRepo.owner.login,
           ownerAvatarUrl: githubRepo.owner.avatar_url,
           htmlUrl: githubRepo.html_url,
@@ -140,6 +143,7 @@ export async function POST(request: NextRequest) {
           isPrivate: githubRepo.private,
           userId: session.user.id,
           deployedUrl: deployedUrl || null,
+          screenshotUrl: screenshotUrl || null,
           collaborationRole: collaborationOptions?.role,
           collaborationTypes: collaborationOptions?.types || [],
           collaborationDetails: collaborationOptions?.details,
@@ -173,6 +177,7 @@ export async function POST(request: NextRequest) {
           description: description || null,
           userId: session.user.id,
           deployedUrl: deployedUrl || null,
+          screenshotUrl: screenshotUrl || null,
           collaborationRole: collaborationOptions?.role,
           collaborationTypes: collaborationOptions?.types || [],
           collaborationDetails: collaborationOptions?.details,

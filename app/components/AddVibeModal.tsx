@@ -12,6 +12,7 @@ interface PendingVibeData {
   repoUrl: string
   vibeTitle: string
   vibeDescription: string
+  screenshotUrl: string
   deployedUrl: string
   collaborationOptions: CollaborationOptions
   includeCollaboration: boolean
@@ -30,6 +31,7 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
   const [repoUrl, setRepoUrl] = useState('')
   const [vibeTitle, setVibeTitle] = useState('')
   const [vibeDescription, setVibeDescription] = useState('')
+  const [screenshotUrl, setScreenshotUrl] = useState('')
   const [deployedUrl, setDeployedUrl] = useState('')
   const [collaborationOptions, setCollaborationOptions] = useState<CollaborationOptions>({
     role: 'SEEKER',
@@ -53,6 +55,7 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
           setRepoUrl(data.repoUrl || '')
           setVibeTitle(data.vibeTitle || '')
           setVibeDescription(data.vibeDescription || '')
+          setScreenshotUrl(data.screenshotUrl || '')
           setDeployedUrl(data.deployedUrl || '')
           setCollaborationOptions(data.collaborationOptions)
           // Clear pending data
@@ -81,6 +84,7 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
       setRepoUrl('')
       setVibeTitle('')
       setVibeDescription('')
+      setScreenshotUrl('')
       setDeployedUrl('')
       setCollaborationOptions({
         role: 'SEEKER',
@@ -159,6 +163,7 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
           repoUrl,
           vibeTitle,
           vibeDescription,
+          screenshotUrl,
           deployedUrl,
           collaborationOptions,
           includeCollaboration,
@@ -174,15 +179,21 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
         name?: string
         title?: string
         description?: string
+        screenshotUrl?: string
         deployedUrl?: string
         collaborationOptions?: CollaborationOptions
       } = {
+        screenshotUrl: screenshotUrl.trim() || undefined,
         deployedUrl: deployedUrl.trim() || undefined,
       }
 
       if (isGitHubVibe && parsed) {
         payload.owner = parsed.owner
         payload.name = parsed.name
+        // Include description for GitHub vibes too (user can override GitHub description)
+        if (vibeDescription.trim()) {
+          payload.description = vibeDescription.trim()
+        }
       } else {
         payload.title = vibeTitle.trim()
         payload.description = vibeDescription.trim() || undefined
@@ -240,7 +251,44 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
         <div className="p-6">
           {step === 'repo' && (
             <form onSubmit={handleRepoSubmit} className="space-y-4">
+              {/* Title */}
               <div>
+                <label className="block text-sm font-medium mb-2 mono">
+                  Vibe Title {!repoUrl && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="text"
+                  value={vibeTitle}
+                  onChange={(e) => setVibeTitle(e.target.value)}
+                  placeholder="My Awesome Project"
+                  className="yard-input w-full"
+                  autoFocus
+                  disabled={isLoading}
+                />
+                <p className="yard-meta text-xs mt-1">
+                  {repoUrl ? 'Override the GitHub repo name with a custom title' : 'Give your vibe a name'}
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium mb-2 mono">
+                  Description <span className="yard-meta font-normal">(optional)</span>
+                </label>
+                <textarea
+                  value={vibeDescription}
+                  onChange={(e) => setVibeDescription(e.target.value)}
+                  placeholder="A brief description of your vibe..."
+                  className="yard-input w-full h-20 resize-none"
+                  disabled={isLoading}
+                />
+                <p className="yard-meta text-xs mt-1">
+                  {repoUrl ? 'Leave empty to use GitHub description' : 'Tell people what your vibe is about'}
+                </p>
+              </div>
+
+              {/* GitHub Repository */}
+              <div className="border-t border-[--yard-border] pt-4">
                 <label className="block text-sm font-medium mb-2 mono">
                   GitHub Repository <span className="yard-meta font-normal">(optional)</span>
                 </label>
@@ -250,47 +298,32 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
                   onChange={(e) => setRepoUrl(e.target.value)}
                   placeholder="owner/repo or github.com/owner/repo"
                   className="yard-input w-full"
-                  autoFocus
                   disabled={isLoading}
                 />
                 <p className="yard-meta text-xs mt-1">
-                  Link a GitHub repository, or skip to create a vibe without one
+                  Link a GitHub repository to import stats and metadata
                 </p>
               </div>
 
-              <div className="border-t border-[--yard-border] pt-4">
-                <p className="yard-meta text-xs mb-3">
-                  {repoUrl ? 'Or override with a custom title:' : 'No GitHub repo? Add a title instead:'}
+              {/* Screenshot URL */}
+              <div>
+                <label className="block text-sm font-medium mb-2 mono">
+                  Screenshot URL <span className="yard-meta font-normal">(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  value={screenshotUrl}
+                  onChange={(e) => setScreenshotUrl(e.target.value)}
+                  placeholder="https://i.imgur.com/example.png"
+                  className="yard-input w-full"
+                  disabled={isLoading}
+                />
+                <p className="yard-meta text-xs mt-1">
+                  Link to an image showing your vibe in action
                 </p>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 mono">
-                      Vibe Title {!repoUrl && <span className="text-red-500">*</span>}
-                    </label>
-                    <input
-                      type="text"
-                      value={vibeTitle}
-                      onChange={(e) => setVibeTitle(e.target.value)}
-                      placeholder="My Awesome Project"
-                      className="yard-input w-full"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2 mono">
-                      Description <span className="yard-meta font-normal">(optional)</span>
-                    </label>
-                    <textarea
-                      value={vibeDescription}
-                      onChange={(e) => setVibeDescription(e.target.value)}
-                      placeholder="A brief description of your vibe..."
-                      className="yard-input w-full h-20 resize-none"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
               </div>
 
+              {/* Live URL */}
               <div>
                 <label className="block text-sm font-medium mb-2 mono">
                   Live URL <span className="yard-meta font-normal">(optional)</span>
