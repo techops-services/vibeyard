@@ -16,7 +16,7 @@ const updateRepoSchema = z.object({
     'EXPERTISE_OFFER',
     'MENTORSHIP',
     'GENERAL_COLLABORATION'
-  ])).optional(),
+  ])).max(6).optional(),
   collaborationDetails: z.string().nullable().optional(),
   isAcceptingCollaborators: z.boolean().optional(),
 })
@@ -152,19 +152,30 @@ export async function PATCH(
     }
     if (collaborationTypes !== undefined) {
       updateData.collaborationTypes = collaborationTypes
-      // Set role to SEEKER if any collaboration types are selected
-      updateData.collaborationRole = collaborationTypes.length > 0 ? 'SEEKER' : null
+      if (collaborationTypes.length > 0) {
+        // Set role to SEEKER if any collaboration types are selected
+        updateData.collaborationRole = 'SEEKER'
+      } else {
+        // Clear all collaboration fields when types are emptied
+        updateData.collaborationRole = null
+        updateData.collaborationDetails = null
+        updateData.isAcceptingCollaborators = false
+      }
     }
-    if (collaborationDetails !== undefined) {
+    // Only update these if collaboration types weren't cleared
+    if (collaborationDetails !== undefined && (collaborationTypes === undefined || collaborationTypes.length > 0)) {
       updateData.collaborationDetails = collaborationDetails || null
     }
-    if (isAcceptingCollaborators !== undefined) {
+    if (isAcceptingCollaborators !== undefined && (collaborationTypes === undefined || collaborationTypes.length > 0)) {
       updateData.isAcceptingCollaborators = isAcceptingCollaborators
     }
 
-    // Update repository
+    // Update repository (include userId in WHERE for TOCTOU protection)
     const updated = await prisma.repository.update({
-      where: { id: params.id },
+      where: {
+        id: params.id,
+        userId: session.user.id, // Enforce ownership at DB level
+      },
       data: updateData,
     })
 
@@ -176,6 +187,14 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'Invalid input: ' + error.errors.map(e => e.message).join(', ') },
         { status: 400 }
+      )
+    }
+
+    // Handle Prisma record not found (ownership changed or deleted)
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Repository not found or you no longer have access' },
+        { status: 404 }
       )
     }
 

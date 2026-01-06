@@ -40,9 +40,31 @@ export function EditVibeModal({ isOpen, onClose, repository }: Props) {
     }
   }
 
+  // Helper to validate URL format
+  const isValidUrl = (url: string): boolean => {
+    if (!url.trim()) return true // Empty is valid (optional field)
+    try {
+      new URL(url.trim())
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    // Client-side URL validation
+    if (!isValidUrl(screenshotUrl)) {
+      setError('Screenshot URL must be a valid URL')
+      return
+    }
+    if (!isValidUrl(deployedUrl)) {
+      setError('Live URL must be a valid URL')
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -123,8 +145,9 @@ export function EditVibeModal({ isOpen, onClose, repository }: Props) {
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete vibe')
+      // Keep showDeleteConfirm=true so user must re-confirm after error
+    } finally {
       setIsLoading(false)
-      setShowDeleteConfirm(false)
     }
   }
 
