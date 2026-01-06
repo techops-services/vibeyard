@@ -143,6 +143,7 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        title: true,
         userId: true,
         isAcceptingCollaborators: true,
       },
@@ -267,7 +268,7 @@ export async function POST(request: NextRequest) {
       targetRepo.userId,
       session.user.name || 'Someone',
       targetRepo.id,
-      targetRepo.name,
+      targetRepo.name || targetRepo.title || 'Untitled',
       data.collaborationType.toLowerCase().replace(/_/g, ' ')
     )
 

@@ -64,6 +64,14 @@ export async function POST(
       return NextResponse.json({ error: 'Repository not found' }, { status: 404 })
     }
 
+    // Check if this is a GitHub-linked vibe (analysis requires GitHub data)
+    if (!repository.owner || !repository.name) {
+      return NextResponse.json(
+        { error: 'Analysis is only available for GitHub-linked vibes' },
+        { status: 400 }
+      )
+    }
+
     // Verify ownership
     if (repository.userId !== user.id) {
       return NextResponse.json(

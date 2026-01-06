@@ -56,8 +56,8 @@ export async function POST(
         },
       })
 
-      // Decrement vote count
-      await prisma.repository.update({
+      // Decrement vote count and return updated count
+      const updatedRepo = await prisma.repository.update({
         where: { id: params.id },
         data: {
           votesCount: {
@@ -66,7 +66,7 @@ export async function POST(
         },
       })
 
-      return NextResponse.json({ voted: false, votesCount: repository.votesCount - 1 })
+      return NextResponse.json({ voted: false, votesCount: updatedRepo.votesCount })
     } else {
       // Add vote
       await prisma.vote.create({
@@ -76,8 +76,8 @@ export async function POST(
         },
       })
 
-      // Increment vote count
-      await prisma.repository.update({
+      // Increment vote count and get updated count
+      const updatedRepo = await prisma.repository.update({
         where: { id: params.id },
         data: {
           votesCount: {
@@ -102,12 +102,12 @@ export async function POST(
           repository.userId,
           session.user.name || 'Someone',
           repository.id,
-          repository.name,
+          repository.name || repository.title || 'Untitled',
           activity.id
         )
       }
 
-      return NextResponse.json({ voted: true, votesCount: repository.votesCount + 1 })
+      return NextResponse.json({ voted: true, votesCount: updatedRepo.votesCount })
     }
   } catch (error) {
     console.error('Error toggling vote:', error)

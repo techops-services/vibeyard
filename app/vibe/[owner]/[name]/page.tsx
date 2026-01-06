@@ -28,12 +28,14 @@ export default async function VibeDetailPage({ params }: PageProps) {
   const owner = decodeURIComponent(params.owner)
   const name = decodeURIComponent(params.name)
 
-  // Fetch repository by owner and name
+  // Check if this is a non-GitHub vibe (owner = '_')
+  const isNonGitHubVibe = owner === '_'
+
+  // Fetch repository by owner/name (GitHub) or by ID (non-GitHub)
   const repository = await prisma.repository.findFirst({
-    where: {
-      owner: owner,
-      name: name,
-    },
+    where: isNonGitHubVibe
+      ? { id: name } // For non-GitHub vibes, 'name' is the repository ID
+      : { owner: owner, name: name },
     include: {
       user: {
         select: {
@@ -96,11 +98,15 @@ export default async function VibeDetailPage({ params }: PageProps) {
   const isOwner = session?.user?.id === repository.userId
   const isLoggedIn = !!session?.user?.id
 
-  // Check if the vibeyard user who added the repo is also the GitHub repo owner
-  const isVerifiedOwner = repository.user.githubUsername?.toLowerCase() === repository.owner.toLowerCase()
+  // For GitHub vibes, check if the vibeyard user who added the repo is also the GitHub repo owner
+  const isVerifiedOwner = repository.owner
+    ? repository.user.githubUsername?.toLowerCase() === repository.owner.toLowerCase()
+    : true // Non-GitHub vibes are always "verified" since there's no external owner
 
   // Check if current user can claim this repo (their GitHub username matches repo owner)
-  const canClaim = isLoggedIn &&
+  // Only applicable for GitHub vibes
+  const canClaim = repository.owner &&
+    isLoggedIn &&
     !isOwner &&
     session?.user?.githubUsername?.toLowerCase() === repository.owner.toLowerCase()
 
@@ -141,7 +147,9 @@ export default async function VibeDetailPage({ params }: PageProps) {
 
             <div className="flex-1">
               <div className="flex items-start justify-between gap-4 mb-2">
-                <h1 className="text-2xl font-bold mono">{repository.fullName}</h1>
+                <h1 className="text-2xl font-bold mono">
+                  {repository.fullName || repository.title || 'Untitled Vibe'}
+                </h1>
                 {repository.deployedUrl && (
                   <DeployedBadge url={repository.deployedUrl} />
                 )}
@@ -154,19 +162,27 @@ export default async function VibeDetailPage({ params }: PageProps) {
               )}
 
               <div className="flex flex-wrap gap-3 yard-meta text-xs">
-                <a
-                  href={repository.htmlUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-[--yard-orange] hover:underline"
-                >
-                  → View on GitHub
-                </a>
-                <span>•</span>
-                <span>{repository.stargazersCount.toLocaleString()} stars</span>
-                <span>•</span>
-                <span>{repository.forksCount.toLocaleString()} forks</span>
-                <span>•</span>
+                {repository.htmlUrl ? (
+                  <>
+                    <a
+                      href={repository.htmlUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-[--yard-orange] hover:underline"
+                    >
+                      → View on GitHub
+                    </a>
+                    <span>•</span>
+                    <span>{repository.stargazersCount.toLocaleString()} stars</span>
+                    <span>•</span>
+                    <span>{repository.forksCount.toLocaleString()} forks</span>
+                    <span>•</span>
+                  </>
+                ) : (
+                  <span className="px-2 py-0.5 bg-[--yard-light-gray] text-[--yard-gray] text-xs">
+                    No GitHub repo linked
+                  </span>
+                )}
                 <span>{repository.viewsCount.toLocaleString()} views</span>
                 {repository.language && (
                   <>
@@ -202,7 +218,7 @@ export default async function VibeDetailPage({ params }: PageProps) {
               )}
 
               {/* Claim Button - show to repo owner who doesn't own it in vibeyard yet */}
-              {canClaim && (
+              {canClaim && repository.fullName && (
                 <div className="mt-4">
                   <ClaimButton
                     repositoryId={repository.id}
@@ -219,26 +235,30 @@ export default async function VibeDetailPage({ params }: PageProps) {
           <div className="grid grid-cols-2 gap-6">
             {/* Left column */}
             <div>
-              <h2 className="text-sm font-semibold mb-3 mono">Repository Info</h2>
+              <h2 className="text-sm font-semibold mb-3 mono">
+                {repository.htmlUrl ? 'Repository Info' : 'Vibe Info'}
+              </h2>
               <dl className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <dt className="yard-meta">Owner:</dt>
-                  <dd className="mono">
-                    <a
-                      href={`https://github.com/${repository.owner}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-[--yard-orange] hover:underline"
-                    >
-                      {repository.owner}
-                    </a>
-                  </dd>
-                </div>
+                {repository.owner && (
+                  <div className="flex justify-between">
+                    <dt className="yard-meta">Owner:</dt>
+                    <dd className="mono">
+                      <a
+                        href={`https://github.com/${repository.owner}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-[--yard-orange] hover:underline"
+                      >
+                        {repository.owner}
+                      </a>
+                    </dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt className="yard-meta">Added by:</dt>
                   <dd className="mono flex items-center gap-1">
-                    {repository.user.githubUsername}
-                    {isVerifiedOwner && (
+                    {repository.user.githubUsername || repository.user.name || 'Anonymous'}
+                    {isVerifiedOwner && repository.owner && (
                       <span className="text-[10px] px-1.5 py-0.5 bg-green-100 text-green-700 font-medium" title="Verified owner">
                         ✓ owner
                       </span>
@@ -259,14 +279,18 @@ export default async function VibeDetailPage({ params }: PageProps) {
                     <dd>{repository.license}</dd>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <dt className="yard-meta">Open issues:</dt>
-                  <dd>{repository.openIssuesCount}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="yard-meta">Visibility:</dt>
-                  <dd>{repository.isPrivate ? '🔒 Private' : '🌍 Public'}</dd>
-                </div>
+                {repository.htmlUrl && (
+                  <>
+                    <div className="flex justify-between">
+                      <dt className="yard-meta">Open issues:</dt>
+                      <dd>{repository.openIssuesCount}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="yard-meta">Visibility:</dt>
+                      <dd>{repository.isPrivate ? '🔒 Private' : '🌍 Public'}</dd>
+                    </div>
+                  </>
+                )}
               </dl>
             </div>
 
@@ -305,7 +329,7 @@ export default async function VibeDetailPage({ params }: PageProps) {
         <div className="p-4 border-t border-[--yard-border]">
           <CollaborationSection
             repositoryId={repository.id}
-            repositoryName={repository.name}
+            repositoryName={repository.name || repository.title || 'Untitled'}
             ownerId={repository.userId}
             isOwner={isOwner}
             isLoggedIn={isLoggedIn}
@@ -327,7 +351,7 @@ export default async function VibeDetailPage({ params }: PageProps) {
         {/* Comments Section */}
         <CommentThread
           repositoryId={repository.id}
-          repositoryName={repository.name}
+          repositoryName={repository.name || repository.title || 'Untitled'}
         />
 
       </main>
