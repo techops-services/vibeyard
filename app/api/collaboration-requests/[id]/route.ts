@@ -160,7 +160,8 @@ export async function PATCH(
     })
 
     // Notify requestor of status change (if owner updated it)
-    if (isTargetOwner && (status === 'ACCEPTED' || status === 'DECLINED')) {
+    // Only send notification if targetRepo still exists
+    if (isTargetOwner && (status === 'ACCEPTED' || status === 'DECLINED') && updatedRequest.targetRepo) {
       await notifyCollaborationStatusChange(
         updatedRequest.requestorId,
         session.user.name || 'Repository owner',

@@ -10,6 +10,11 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     include: ['**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'out', 'e2e'],
+    server: {
+      deps: {
+        inline: ['next-auth'],
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

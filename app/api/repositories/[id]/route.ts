@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 
 const updateRepoSchema = z.object({
@@ -165,6 +166,59 @@ export async function PATCH(
 
     return NextResponse.json(
       { error: 'Failed to update repository' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE /api/repositories/[id]
+ * Delete repository (owner only)
+ */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check ownership
+    const repository = await prisma.repository.findUnique({
+      where: { id: params.id },
+      select: { userId: true },
+    })
+
+    if (!repository) {
+      return NextResponse.json({ error: 'Repository not found' }, { status: 404 })
+    }
+
+    if (repository.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Delete repository (cascades handle related data)
+    await prisma.repository.delete({
+      where: { id: params.id },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting repository:', error)
+
+    // Handle Prisma record not found error (race condition - already deleted)
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Repository not found or already deleted' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to delete repository' },
       { status: 500 }
     )
   }

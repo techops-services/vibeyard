@@ -1,7 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Repository } from '@prisma/client'
+import { Trash2 } from 'lucide-react'
 import { StarRating } from '@/app/components/ui/StarRating'
 import { AnalysisStatus } from '@/app/components/ui/AnalysisStatus'
 import { EditDeployedUrl } from './EditDeployedUrl'
@@ -24,6 +27,43 @@ interface Props {
 }
 
 export function RepositoryList({ repositories }: Props) {
+  const router = useRouter()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const handleDelete = async (repoId: string, repoName: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${repoName}"? This action is permanent and will delete all votes, follows, comments, and other related data.`
+      )
+    ) {
+      return
+    }
+
+    setDeletingId(repoId)
+    try {
+      const response = await fetch(`/api/repositories/${repoId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        // If 404, the item was already deleted (possibly by another tab/session)
+        // Still refresh the UI to remove it
+        if (response.status === 404) {
+          router.refresh()
+          return
+        }
+        throw new Error('Failed to delete')
+      }
+
+      // Refresh the page to update the list
+      router.refresh()
+    } catch (error) {
+      console.error('Error deleting repository:', error)
+      alert('Failed to delete vibe. Please try again.')
+      setDeletingId(null)
+    }
+  }
+
   if (repositories.length === 0) {
     return (
       <div className="border border-[--yard-border] p-6">
@@ -108,6 +148,23 @@ export function RepositoryList({ repositories }: Props) {
               initialDetails={repo.collaborationDetails}
               initialIsAccepting={repo.isAcceptingCollaborators}
             />
+
+            {/* Delete Button */}
+            <div className="mt-3 pt-3 border-t border-[--yard-border]">
+              <button
+                onClick={() =>
+                  handleDelete(
+                    repo.id,
+                    repo.fullName || repo.title || 'Untitled Vibe'
+                  )
+                }
+                disabled={deletingId === repo.id}
+                className="text-xs yard-meta hover:text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                <Trash2 size={14} />
+                {deletingId === repo.id ? 'Deleting...' : 'Delete vibe'}
+              </button>
+            </div>
           </div>
         ))}
       </div>

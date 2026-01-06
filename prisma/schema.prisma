@@ -289,9 +289,9 @@ model CollaborationRequest {
   requestorId String
   requestor   User     @relation("RequestorUser", fields: [requestorId], references: [id], onDelete: Cascade)
 
-  // Target repository and owner
-  targetRepoId String
-  targetRepo   Repository @relation("TargetRepo", fields: [targetRepoId], references: [id], onDelete: Cascade)
+  // Target repository and owner (nullable to preserve history when repo deleted)
+  targetRepoId String?
+  targetRepo   Repository? @relation("TargetRepo", fields: [targetRepoId], references: [id], onDelete: SetNull)
   targetOwnerId String
   targetOwner   User @relation("TargetOwner", fields: [targetOwnerId], references: [id], onDelete: Cascade)
 
