@@ -4,6 +4,8 @@
 
 Vibeyard is a community-driven platform where developers can showcase, discover, and collaborate on AI-assisted code projects (vibecode). Think of it as a junkyard where raw materials meet potential—a place to find diamonds in the rough, connect with collaborators, and transform experimental AI-generated code into production-ready applications.
 
+![Vibeyard Landing Page](./img/landing.png)
+
 ---
 
 ## 📖 Overview

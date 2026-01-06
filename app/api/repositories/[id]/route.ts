@@ -5,6 +5,9 @@ import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 
 const updateRepoSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).nullable().optional(),
+  screenshotUrl: z.string().url().nullable().optional(),
   deployedUrl: z.string().url().nullable().optional(),
   collaborationTypes: z.array(z.enum([
     'CODE_REVIEW',
@@ -13,7 +16,7 @@ const updateRepoSchema = z.object({
     'EXPERTISE_OFFER',
     'MENTORSHIP',
     'GENERAL_COLLABORATION'
-  ])).optional(),
+  ])).max(6).optional(),
   collaborationDetails: z.string().nullable().optional(),
   isAcceptingCollaborators: z.boolean().optional(),
 })
@@ -123,6 +126,9 @@ export async function PATCH(
     // Parse and validate request body
     const body = await request.json()
     const {
+      title,
+      description,
+      screenshotUrl,
       deployedUrl,
       collaborationTypes,
       collaborationDetails,
@@ -132,24 +138,44 @@ export async function PATCH(
     // Build update data
     const updateData: Record<string, unknown> = {}
 
+    if (title !== undefined) {
+      updateData.title = title
+    }
+    if (description !== undefined) {
+      updateData.description = description || null
+    }
+    if (screenshotUrl !== undefined) {
+      updateData.screenshotUrl = screenshotUrl || null
+    }
     if (deployedUrl !== undefined) {
       updateData.deployedUrl = deployedUrl || null
     }
     if (collaborationTypes !== undefined) {
       updateData.collaborationTypes = collaborationTypes
-      // Set role to SEEKER if any collaboration types are selected
-      updateData.collaborationRole = collaborationTypes.length > 0 ? 'SEEKER' : null
+      if (collaborationTypes.length > 0) {
+        // Set role to SEEKER if any collaboration types are selected
+        updateData.collaborationRole = 'SEEKER'
+      } else {
+        // Clear all collaboration fields when types are emptied
+        updateData.collaborationRole = null
+        updateData.collaborationDetails = null
+        updateData.isAcceptingCollaborators = false
+      }
     }
-    if (collaborationDetails !== undefined) {
+    // Only update these if collaboration types weren't cleared
+    if (collaborationDetails !== undefined && (collaborationTypes === undefined || collaborationTypes.length > 0)) {
       updateData.collaborationDetails = collaborationDetails || null
     }
-    if (isAcceptingCollaborators !== undefined) {
+    if (isAcceptingCollaborators !== undefined && (collaborationTypes === undefined || collaborationTypes.length > 0)) {
       updateData.isAcceptingCollaborators = isAcceptingCollaborators
     }
 
-    // Update repository
+    // Update repository (include userId in WHERE for TOCTOU protection)
     const updated = await prisma.repository.update({
-      where: { id: params.id },
+      where: {
+        id: params.id,
+        userId: session.user.id, // Enforce ownership at DB level
+      },
       data: updateData,
     })
 
@@ -159,8 +185,16 @@ export async function PATCH(
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid URL format' },
+        { error: 'Invalid input: ' + error.errors.map(e => e.message).join(', ') },
         { status: 400 }
+      )
+    }
+
+    // Handle Prisma record not found (ownership changed or deleted)
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Repository not found or you no longer have access' },
+        { status: 404 }
       )
     }
 
