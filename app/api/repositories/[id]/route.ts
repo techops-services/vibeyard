@@ -5,6 +5,9 @@ import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 
 const updateRepoSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).nullable().optional(),
+  screenshotUrl: z.string().url().nullable().optional(),
   deployedUrl: z.string().url().nullable().optional(),
   collaborationTypes: z.array(z.enum([
     'CODE_REVIEW',
@@ -123,6 +126,9 @@ export async function PATCH(
     // Parse and validate request body
     const body = await request.json()
     const {
+      title,
+      description,
+      screenshotUrl,
       deployedUrl,
       collaborationTypes,
       collaborationDetails,
@@ -132,6 +138,15 @@ export async function PATCH(
     // Build update data
     const updateData: Record<string, unknown> = {}
 
+    if (title !== undefined) {
+      updateData.title = title
+    }
+    if (description !== undefined) {
+      updateData.description = description || null
+    }
+    if (screenshotUrl !== undefined) {
+      updateData.screenshotUrl = screenshotUrl || null
+    }
     if (deployedUrl !== undefined) {
       updateData.deployedUrl = deployedUrl || null
     }
@@ -159,7 +174,7 @@ export async function PATCH(
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid URL format' },
+        { error: 'Invalid input: ' + error.errors.map(e => e.message).join(', ') },
         { status: 400 }
       )
     }
