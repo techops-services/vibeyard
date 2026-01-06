@@ -10,6 +10,7 @@ import { FollowButton } from '@/app/components/ui/FollowButton'
 import { DeployedBadge } from '@/app/components/ui/DeployedBadge'
 import { ClaimButton } from '@/app/components/ui/ClaimButton'
 import { CommentThread } from '@/app/components/comments/CommentThread'
+import { ScreenshotImage } from '@/app/components/ui/ScreenshotImage'
 
 export const dynamic = 'force-dynamic'
 
@@ -163,18 +164,10 @@ export default async function VibeDetailPage({ params }: PageProps) {
 
               {/* Screenshot */}
               {repository.screenshotUrl && (
-                <div className="mb-4 border border-[--yard-border] overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={repository.screenshotUrl}
-                    alt={`Screenshot of ${repository.fullName || repository.title || 'vibe'}`}
-                    className="w-full h-auto max-h-[400px] object-contain bg-[--yard-light-gray]"
-                    onError={(e) => {
-                      // Hide the image container if it fails to load
-                      (e.target as HTMLImageElement).parentElement!.style.display = 'none'
-                    }}
-                  />
-                </div>
+                <ScreenshotImage
+                  src={repository.screenshotUrl}
+                  alt={`Screenshot of ${repository.fullName || repository.title || 'vibe'}`}
+                />
               )}
 
               <div className="flex flex-wrap gap-3 yard-meta text-xs">
