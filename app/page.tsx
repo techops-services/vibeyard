@@ -58,7 +58,7 @@ export default async function HomePage() {
         {/* Repository list */}
         {repositories.length === 0 ? (
           <div className="p-8 text-center yard-meta">
-            <p className="mb-2">No repositories in the yard yet.</p>
+            <p className="mb-2">No vibes in the yard yet.</p>
             <p className="text-xs">
               Be the first to add a vibe using the &quot;+ add vibe&quot; button above.
             </p>
@@ -72,6 +72,7 @@ export default async function HomePage() {
                 rank={index + 1}
                 name={repo.name}
                 fullName={repo.fullName}
+                title={repo.title}
                 description={repo.description}
                 owner={repo.owner}
                 htmlUrl={repo.htmlUrl}

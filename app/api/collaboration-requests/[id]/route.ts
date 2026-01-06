@@ -129,6 +129,7 @@ export async function PATCH(
           select: {
             id: true,
             name: true,
+            title: true,
             fullName: true,
             description: true,
             htmlUrl: true,
@@ -163,7 +164,7 @@ export async function PATCH(
       await notifyCollaborationStatusChange(
         updatedRequest.requestorId,
         session.user.name || 'Repository owner',
-        updatedRequest.targetRepo.name,
+        updatedRequest.targetRepo.name || updatedRequest.targetRepo.title || 'Untitled',
         status,
         updatedRequest.targetRepo.id
       )

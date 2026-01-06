@@ -6,8 +6,12 @@ import { z } from 'zod'
 
 // Schema for adding a repository
 const addRepoSchema = z.object({
-  owner: z.string(),
-  name: z.string(),
+  // GitHub repo info (optional - can add vibes without GitHub)
+  owner: z.string().optional(),
+  name: z.string().optional(),
+  // Custom vibe info (used when no GitHub repo)
+  title: z.string().optional(),
+  description: z.string().optional(),
   // Deployed URL (optional)
   deployedUrl: z.string().url().optional().or(z.literal('')),
   // Collaboration options
@@ -24,7 +28,10 @@ const addRepoSchema = z.object({
     details: z.string().optional(),
     isAccepting: z.boolean().default(false),
   }).optional(),
-})
+}).refine(
+  (data) => (data.owner && data.name) || data.title,
+  { message: 'Either GitHub repository (owner/name) or a title is required' }
+)
 
 /**
  * GET /api/repositories
@@ -68,7 +75,7 @@ export async function GET() {
 
 /**
  * POST /api/repositories
- * Add a repository from GitHub to the user's Yard Lot
+ * Add a repository (with or without GitHub) to the user's Yard Lot
  */
 export async function POST(request: NextRequest) {
   try {
@@ -80,76 +87,110 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json()
-    const { owner, name, deployedUrl, collaborationOptions } = addRepoSchema.parse(body)
+    const { owner, name, title, description, deployedUrl, collaborationOptions } = addRepoSchema.parse(body)
 
-    // Get user's GitHub access token
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { githubAccessToken: true },
-    })
+    const isGitHubVibe = owner && name
 
-    if (!user?.githubAccessToken) {
-      return NextResponse.json(
-        { error: 'GitHub access token not found. Please re-authenticate.' },
-        { status: 401 }
-      )
+    if (isGitHubVibe) {
+      // GitHub-linked vibe: validate with GitHub API
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { githubAccessToken: true },
+      })
+
+      if (!user?.githubAccessToken) {
+        return NextResponse.json(
+          { error: 'GitHub access token not found. Please re-authenticate.' },
+          { status: 401 }
+        )
+      }
+
+      // Fetch repository from GitHub
+      const githubClient = createGitHubClient(user.githubAccessToken)
+      const githubRepo = await githubClient.getRepository(owner, name)
+
+      // Check if repository already exists
+      const existingRepo = await prisma.repository.findUnique({
+        where: { githubId: githubRepo.id },
+      })
+
+      if (existingRepo) {
+        return NextResponse.json(
+          { error: 'Repository already added' },
+          { status: 409 }
+        )
+      }
+
+      // Create GitHub-linked repository in database
+      const repository = await prisma.repository.create({
+        data: {
+          githubId: githubRepo.id,
+          name: githubRepo.name,
+          fullName: githubRepo.full_name,
+          description: githubRepo.description,
+          owner: githubRepo.owner.login,
+          ownerAvatarUrl: githubRepo.owner.avatar_url,
+          htmlUrl: githubRepo.html_url,
+          language: githubRepo.language,
+          topics: githubRepo.topics,
+          stargazersCount: githubRepo.stargazers_count,
+          forksCount: githubRepo.forks_count,
+          openIssuesCount: githubRepo.open_issues_count,
+          license: githubRepo.license?.spdx_id,
+          isPrivate: githubRepo.private,
+          userId: session.user.id,
+          deployedUrl: deployedUrl || null,
+          collaborationRole: collaborationOptions?.role,
+          collaborationTypes: collaborationOptions?.types || [],
+          collaborationDetails: collaborationOptions?.details,
+          isAcceptingCollaborators: collaborationOptions?.isAccepting || false,
+        },
+      })
+
+      await prisma.activity.create({
+        data: {
+          actorId: session.user.id,
+          type: 'repository_connected',
+          entityType: 'repository',
+          entityId: repository.id,
+        },
+      })
+
+      return NextResponse.json(repository, { status: 201 })
+    } else {
+      // Non-GitHub vibe: create with user-provided title
+      // Validate that title exists and is not empty
+      if (!title || !title.trim()) {
+        return NextResponse.json(
+          { error: 'Title is required for non-GitHub vibes' },
+          { status: 400 }
+        )
+      }
+
+      const repository = await prisma.repository.create({
+        data: {
+          title: title.trim(),
+          description: description || null,
+          userId: session.user.id,
+          deployedUrl: deployedUrl || null,
+          collaborationRole: collaborationOptions?.role,
+          collaborationTypes: collaborationOptions?.types || [],
+          collaborationDetails: collaborationOptions?.details,
+          isAcceptingCollaborators: collaborationOptions?.isAccepting || false,
+        },
+      })
+
+      await prisma.activity.create({
+        data: {
+          actorId: session.user.id,
+          type: 'repository_connected',
+          entityType: 'repository',
+          entityId: repository.id,
+        },
+      })
+
+      return NextResponse.json(repository, { status: 201 })
     }
-
-    // Fetch repository from GitHub
-    const githubClient = createGitHubClient(user.githubAccessToken)
-    const githubRepo = await githubClient.getRepository(owner, name)
-
-    // Check if repository already exists
-    const existingRepo = await prisma.repository.findUnique({
-      where: { githubId: githubRepo.id },
-    })
-
-    if (existingRepo) {
-      return NextResponse.json(
-        { error: 'Repository already added' },
-        { status: 409 }
-      )
-    }
-
-    // Create repository in database
-    const repository = await prisma.repository.create({
-      data: {
-        githubId: githubRepo.id,
-        name: githubRepo.name,
-        fullName: githubRepo.full_name,
-        description: githubRepo.description,
-        owner: githubRepo.owner.login,
-        ownerAvatarUrl: githubRepo.owner.avatar_url,
-        htmlUrl: githubRepo.html_url,
-        language: githubRepo.language,
-        topics: githubRepo.topics,
-        stargazersCount: githubRepo.stargazers_count,
-        forksCount: githubRepo.forks_count,
-        openIssuesCount: githubRepo.open_issues_count,
-        license: githubRepo.license?.spdx_id,
-        isPrivate: githubRepo.private,
-        userId: session.user.id,
-        // Deployed URL
-        deployedUrl: deployedUrl || null,
-        // Collaboration fields
-        collaborationRole: collaborationOptions?.role,
-        collaborationTypes: collaborationOptions?.types || [],
-        collaborationDetails: collaborationOptions?.details,
-        isAcceptingCollaborators: collaborationOptions?.isAccepting || false,
-      },
-    })
-
-    // Create activity log
-    await prisma.activity.create({
-      data: {
-        actorId: session.user.id,
-        type: 'repository_connected',
-        entityType: 'repository',
-        entityId: repository.id,
-      },
-    })
-
-    return NextResponse.json(repository, { status: 201 })
   } catch (error) {
     console.error('Error adding repository:', error)
 

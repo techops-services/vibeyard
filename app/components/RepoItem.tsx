@@ -10,11 +10,12 @@ import { StarRating } from './ui/StarRating'
 interface RepoItemProps {
   id: string
   rank: number
-  name: string
-  fullName: string
+  name: string | null
+  fullName: string | null
+  title?: string | null
   description: string | null
-  owner: string
-  htmlUrl: string
+  owner: string | null
+  htmlUrl: string | null
   language: string | null
   stargazersCount: number
   forksCount: number
@@ -32,6 +33,7 @@ export function RepoItem({
   rank,
   name,
   fullName,
+  title,
   description,
   owner,
   htmlUrl,
@@ -93,9 +95,18 @@ export function RepoItem({
     }
   }
 
+  // Determine if this is a GitHub-linked vibe
+  const isGitHubVibe = !!htmlUrl && !!owner && !!name
+
+  // Build the correct URL for the vibe detail page
+  const vibeUrl = isGitHubVibe ? `/vibe/${owner}/${name}` : `/vibe/_/${id}`
+
+  // Display name: use title for non-GitHub vibes, name for GitHub vibes
+  const displayName = name || title || 'Untitled Vibe'
+
   return (
     <Link
-      href={`/vibe/${owner}/${name}`}
+      href={vibeUrl}
       className="yard-item flex gap-2 cursor-pointer hover:bg-[--yard-hover] block"
     >
       {/* Vote section */}
@@ -117,11 +128,13 @@ export function RepoItem({
           <span className="yard-meta mr-1">{rank}.</span>
           <div className="flex-1">
             <span className="yard-link font-medium">
-              {name}
+              {displayName}
             </span>
-            <span className="yard-meta ml-1 text-xs">
-              ({getHostname(htmlUrl)})
-            </span>
+            {isGitHubVibe && htmlUrl && (
+              <span className="yard-meta ml-1 text-xs">
+                ({getHostname(htmlUrl)})
+              </span>
+            )}
             {collaborationRole === 'SEEKER' && isAcceptingCollaborators && (
               <span className="ml-2 text-xs px-2 py-0.5 bg-[--yard-orange] text-white font-medium">
                 seeker
@@ -139,17 +152,25 @@ export function RepoItem({
 
         {/* Metadata */}
         <div className="yard-meta flex items-center gap-2 mt-1 text-xs">
-          <span className="mono">{fullName}</span>
-          {language && (
+          {isGitHubVibe ? (
             <>
+              <span className="mono">{fullName}</span>
+              {language && (
+                <>
+                  <span>•</span>
+                  <span>{language}</span>
+                </>
+              )}
               <span>•</span>
-              <span>{language}</span>
+              <span>{stargazersCount.toLocaleString()} stars</span>
+              <span>•</span>
+              <span>{forksCount.toLocaleString()} forks</span>
             </>
+          ) : (
+            <span className="px-1.5 py-0.5 bg-[--yard-light-gray] text-[--yard-gray]">
+              no repo
+            </span>
           )}
-          <span>•</span>
-          <span>{stargazersCount.toLocaleString()} stars</span>
-          <span>•</span>
-          <span>{forksCount.toLocaleString()} forks</span>
           {followersCount > 0 && (
             <>
               <span>•</span>
@@ -158,16 +179,20 @@ export function RepoItem({
           )}
           <span>•</span>
           <span>{formatDate(createdAt)}</span>
-          <span>•</span>
-          <a
-            href={htmlUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[--yard-orange] hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            github
-          </a>
+          {isGitHubVibe && htmlUrl && (
+            <>
+              <span>•</span>
+              <a
+                href={htmlUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[--yard-orange] hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                github
+              </a>
+            </>
+          )}
         </div>
 
         {/* Completeness Rating - only show if analyzed */}

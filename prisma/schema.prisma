@@ -113,14 +113,17 @@ model VerificationToken {
 model Repository {
   id                String   @id @default(cuid())
 
-  // GitHub data
-  githubId          Int      @unique
-  name              String
-  fullName          String
+  // Custom vibe data (used when no GitHub repo)
+  title             String?  // User-provided title for non-GitHub vibes
+
+  // GitHub data (all optional for non-GitHub vibes)
+  githubId          Int?     @unique
+  name              String?  // GitHub repo name
+  fullName          String?  // GitHub full name (owner/name)
   description       String?
-  owner             String
+  owner             String?  // GitHub owner username
   ownerAvatarUrl    String?
-  htmlUrl           String
+  htmlUrl           String?  // GitHub URL
   language          String?
   topics            String[] // Array of topic strings
   stargazersCount   Int      @default(0)

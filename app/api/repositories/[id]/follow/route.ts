@@ -105,7 +105,7 @@ export async function POST(
           repository.userId,
           session.user.name || 'Someone',
           repository.id,
-          repository.name,
+          repository.name || repository.title || 'Untitled',
           activity.id
         )
       }

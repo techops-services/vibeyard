@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Verify repository exists
     const repository = await prisma.repository.findUnique({
       where: { id: data.repositoryId },
-      select: { id: true, name: true, userId: true },
+      select: { id: true, name: true, title: true, userId: true },
     })
 
     if (!repository) {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         repository.userId,
         session.user.name || 'Someone',
         repository.id,
-        repository.name,
+        repository.name || repository.title || 'Untitled',
         data.title
       )
     }

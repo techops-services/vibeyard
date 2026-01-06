@@ -10,6 +10,8 @@ const PENDING_VIBE_KEY = 'vibeyard_pending_vibe'
 
 interface PendingVibeData {
   repoUrl: string
+  vibeTitle: string
+  vibeDescription: string
   deployedUrl: string
   collaborationOptions: CollaborationOptions
   includeCollaboration: boolean
@@ -26,6 +28,8 @@ type Step = 'repo' | 'collaboration'
 export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
   const [step, setStep] = useState<Step>('repo')
   const [repoUrl, setRepoUrl] = useState('')
+  const [vibeTitle, setVibeTitle] = useState('')
+  const [vibeDescription, setVibeDescription] = useState('')
   const [deployedUrl, setDeployedUrl] = useState('')
   const [collaborationOptions, setCollaborationOptions] = useState<CollaborationOptions>({
     role: 'SEEKER',
@@ -46,8 +50,10 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
         try {
           const data: PendingVibeData = JSON.parse(pendingData)
           // Restore form state
-          setRepoUrl(data.repoUrl)
-          setDeployedUrl(data.deployedUrl)
+          setRepoUrl(data.repoUrl || '')
+          setVibeTitle(data.vibeTitle || '')
+          setVibeDescription(data.vibeDescription || '')
+          setDeployedUrl(data.deployedUrl || '')
           setCollaborationOptions(data.collaborationOptions)
           // Clear pending data
           sessionStorage.removeItem(PENDING_VIBE_KEY)
@@ -62,17 +68,19 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
 
   // Handle auto-submit after restoring pending data
   useEffect(() => {
-    if (autoSubmitting && repoUrl) {
+    if (autoSubmitting && (repoUrl || vibeTitle)) {
       const includeCollaboration = collaborationOptions.types.length > 0
       submitRepository(includeCollaboration)
       setAutoSubmitting(false)
     }
-  }, [autoSubmitting, repoUrl])
+  }, [autoSubmitting, repoUrl, vibeTitle])
 
   const handleClose = () => {
     if (!isLoading) {
       setStep('repo')
       setRepoUrl('')
+      setVibeTitle('')
+      setVibeDescription('')
       setDeployedUrl('')
       setCollaborationOptions({
         role: 'SEEKER',
@@ -105,10 +113,19 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
     e.preventDefault()
     setError(null)
 
-    const parsed = parseRepoUrl(repoUrl)
-    if (!parsed) {
-      setError('Invalid format. Use "owner/repo" or GitHub URL')
+    // Check if either GitHub repo or title is provided
+    if (!repoUrl && !vibeTitle.trim()) {
+      setError('Please provide either a GitHub repository or a vibe title')
       return
+    }
+
+    // If GitHub repo is provided, validate format
+    if (repoUrl) {
+      const parsed = parseRepoUrl(repoUrl)
+      if (!parsed) {
+        setError('Invalid GitHub format. Use "owner/repo" or GitHub URL')
+        return
+      }
     }
 
     setStep('collaboration')
@@ -128,15 +145,20 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
     setIsLoading(true)
 
     try {
-      const parsed = parseRepoUrl(repoUrl)
-      if (!parsed) {
-        throw new Error('Invalid repository format')
+      const parsed = repoUrl ? parseRepoUrl(repoUrl) : null
+      const isGitHubVibe = !!parsed
+
+      // Validate that we have either GitHub repo or title
+      if (!isGitHubVibe && !vibeTitle.trim()) {
+        throw new Error('Please provide either a GitHub repository or a vibe title')
       }
 
       // If not logged in, store data and redirect to login
       if (!isLoggedIn) {
         const pendingData: PendingVibeData = {
           repoUrl,
+          vibeTitle,
+          vibeDescription,
           deployedUrl,
           collaborationOptions,
           includeCollaboration,
@@ -148,14 +170,22 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
       }
 
       const payload: {
-        owner: string
-        name: string
+        owner?: string
+        name?: string
+        title?: string
+        description?: string
         deployedUrl?: string
         collaborationOptions?: CollaborationOptions
       } = {
-        owner: parsed.owner,
-        name: parsed.name,
         deployedUrl: deployedUrl.trim() || undefined,
+      }
+
+      if (isGitHubVibe && parsed) {
+        payload.owner = parsed.owner
+        payload.name = parsed.name
+      } else {
+        payload.title = vibeTitle.trim()
+        payload.description = vibeDescription.trim() || undefined
       }
 
       if (includeCollaboration && collaborationOptions.types.length > 0) {
@@ -172,13 +202,13 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to add repository')
+        throw new Error(data.error || 'Failed to add vibe')
       }
 
       handleClose()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add repository')
+      setError(err instanceof Error ? err.message : 'Failed to add vibe')
     } finally {
       setIsLoading(false)
     }
@@ -212,7 +242,7 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
             <form onSubmit={handleRepoSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2 mono">
-                  GitHub Repository
+                  GitHub Repository <span className="yard-meta font-normal">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -224,8 +254,41 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
                   disabled={isLoading}
                 />
                 <p className="yard-meta text-xs mt-1">
-                  Enter a GitHub repository in the format &quot;owner/repo&quot; or paste the full GitHub URL
+                  Link a GitHub repository, or skip to create a vibe without one
                 </p>
+              </div>
+
+              <div className="border-t border-[--yard-border] pt-4">
+                <p className="yard-meta text-xs mb-3">
+                  {repoUrl ? 'Or override with a custom title:' : 'No GitHub repo? Add a title instead:'}
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 mono">
+                      Vibe Title {!repoUrl && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      value={vibeTitle}
+                      onChange={(e) => setVibeTitle(e.target.value)}
+                      placeholder="My Awesome Project"
+                      className="yard-input w-full"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 mono">
+                      Description <span className="yard-meta font-normal">(optional)</span>
+                    </label>
+                    <textarea
+                      value={vibeDescription}
+                      onChange={(e) => setVibeDescription(e.target.value)}
+                      placeholder="A brief description of your vibe..."
+                      className="yard-input w-full h-20 resize-none"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -255,7 +318,7 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
                 <button
                   type="submit"
                   className="yard-button"
-                  disabled={isLoading || !repoUrl}
+                  disabled={isLoading || (!repoUrl && !vibeTitle.trim())}
                 >
                   Next: Collaboration Options
                 </button>
@@ -275,7 +338,9 @@ export function AddVibeModal({ isOpen, onClose, isLoggedIn = false }: Props) {
             <div className="space-y-4">
               <p className="yard-meta text-sm mb-4">
                 Configure collaboration options for{' '}
-                <span className="mono text-[--yard-fg] font-medium">{repoUrl}</span>
+                <span className="mono text-[--yard-fg] font-medium">
+                  {repoUrl || vibeTitle}
+                </span>
               </p>
 
               {!isLoggedIn && (

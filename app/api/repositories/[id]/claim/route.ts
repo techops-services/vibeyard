@@ -39,6 +39,14 @@ export async function POST(
       )
     }
 
+    // Can only claim GitHub-linked vibes
+    if (!repository.owner) {
+      return NextResponse.json(
+        { error: 'This vibe is not linked to a GitHub repository and cannot be claimed' },
+        { status: 400 }
+      )
+    }
+
     // Verify that the user's GitHub username matches the repo owner
     const githubUsername = session.user.githubUsername
 
