@@ -92,11 +92,12 @@ export default async function WorkbenchPage() {
     },
   })
 
-  // Fetch pending collaboration requests
+  // Fetch pending collaboration requests (only where target repo still exists)
   const pendingRequests = await prisma.collaborationRequest.findMany({
     where: {
       targetOwnerId: session.user.id,
       status: 'PENDING',
+      targetRepoId: { not: null },
     },
     include: {
       requestor: {
@@ -182,7 +183,7 @@ export default async function WorkbenchPage() {
 
         {/* Right Column */}
         <div className="space-y-6">
-          <CollaborationRequests requests={pendingRequests} />
+          <CollaborationRequests requests={pendingRequests.filter((r): r is typeof r & { targetRepo: NonNullable<typeof r.targetRepo> } => r.targetRepo !== null)} />
           <ImprovementSuggestions suggestions={activeSuggestions} />
         </div>
       </div>
