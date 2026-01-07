@@ -9,6 +9,62 @@ export default function VibeCodPage() {
       <main className="flex-1 max-w-4xl w-full mx-auto p-6">
         <h1 className="text-2xl font-bold mono mb-6">vibecoding guide</h1>
 
+        {/* Get Started with a Template */}
+        <section className="yard-card p-4 mb-6">
+          <h2 className="text-lg font-bold mono mb-3">
+            Get Started with a Template
+          </h2>
+          <p className="text-sm mb-3">
+            The fastest way to start vibecoding is to use our pre-configured
+            template repository. It includes everything you need for AI-assisted
+            development with Claude Code.
+          </p>
+
+          <div className="bg-[--yard-light-gray] p-3 mb-3">
+            <p className="text-xs mono font-bold mb-2">Quick Start:</p>
+            <ol className="text-xs mono space-y-1 list-decimal list-inside">
+              <li>
+                Click{' '}
+                <a
+                  href="https://github.com/techops-services/vibecode-template"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[--yard-orange] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[--yard-orange]"
+                >
+                  Use this template
+                </a>{' '}
+                on GitHub
+              </li>
+              <li>Copy .claude directory and CLAUDE.md to your project</li>
+              <li>Customize CLAUDE.md with your project details</li>
+            </ol>
+          </div>
+
+          <div className="mb-3">
+            <p className="text-sm font-bold mb-2">What&apos;s Included:</p>
+            <ul className="text-sm list-disc list-inside ml-2 space-y-1">
+              <li>
+                7 specialized agents (Planner, Designer, Developer, Tester,
+                Reviewer, Writer, Deployer)
+              </li>
+              <li>
+                Production workflows for feature development, specs, and code
+                review
+              </li>
+              <li>
+                MCP servers for Memory, Atlassian (JIRA/Confluence), and Chrome
+                DevTools
+              </li>
+              <li>Best practices and agent collaboration patterns</li>
+            </ul>
+          </div>
+
+          <p className="text-sm yard-meta">
+            The template is fully customizable. Edit CLAUDE.md to match your
+            tech stack, coding conventions, and team workflows.
+          </p>
+        </section>
+
         {/* What is Vibecoding? */}
         <section className="yard-card p-4 mb-6">
           <h2 className="text-lg font-bold mono mb-3">
