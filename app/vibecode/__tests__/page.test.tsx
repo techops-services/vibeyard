@@ -8,7 +8,7 @@ describe('VibeCodPage', () => {
     expect(screen.getByText('vibecoding guide')).toBeInTheDocument()
   })
 
-  it('renders the Get Started with a Template section first', () => {
+  it('renders the Get Started with a Template section', () => {
     render(<VibeCodPage />)
 
     // Template section should exist

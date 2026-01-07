@@ -9,6 +9,24 @@ export default function VibeCodPage() {
       <main className="flex-1 max-w-4xl w-full mx-auto p-6">
         <h1 className="text-2xl font-bold mono mb-6">vibecoding guide</h1>
 
+        {/* What is Vibecoding? */}
+        <section className="yard-card p-4 mb-6">
+          <h2 className="text-lg font-bold mono mb-3">
+            What is Vibecoding?
+          </h2>
+          <p className="text-sm mb-2">
+            Vibecoding is AI-assisted development where you work alongside
+            powerful AI agents to build software faster and smarter. Instead of
+            writing every line of code yourself, you orchestrate AI tools to
+            handle boilerplate, exploration, testing, and implementation while
+            you focus on architecture and product decisions.
+          </p>
+          <p className="text-sm yard-meta">
+            The best vibecoding happens when you understand how to effectively
+            use agents, skills, and MCP servers together.
+          </p>
+        </section>
+
         {/* Get Started with a Template */}
         <section className="yard-card p-4 mb-6">
           <h2 className="text-lg font-bold mono mb-3">
@@ -62,24 +80,6 @@ export default function VibeCodPage() {
           <p className="text-sm yard-meta">
             The template is fully customizable. Edit CLAUDE.md to match your
             tech stack, coding conventions, and team workflows.
-          </p>
-        </section>
-
-        {/* What is Vibecoding? */}
-        <section className="yard-card p-4 mb-6">
-          <h2 className="text-lg font-bold mono mb-3">
-            What is Vibecoding?
-          </h2>
-          <p className="text-sm mb-2">
-            Vibecoding is AI-assisted development where you work alongside
-            powerful AI agents to build software faster and smarter. Instead of
-            writing every line of code yourself, you orchestrate AI tools to
-            handle boilerplate, exploration, testing, and implementation while
-            you focus on architecture and product decisions.
-          </p>
-          <p className="text-sm yard-meta">
-            The best vibecoding happens when you understand how to effectively
-            use agents, skills, and MCP servers together.
           </p>
         </section>
 
